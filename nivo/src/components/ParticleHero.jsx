@@ -7,19 +7,23 @@ const STATE_ERMINE = 'ermine';
 
 const TRANSITION_DURATION = 1850;
 const TEXT_SAMPLE_STEP = 3;
-const ERMINE_SAMPLE_STEP = 3;
+const ERMINE_SAMPLE_STEP = 2;
 
 const vertexShader = `
   attribute float aSize;
   attribute float aMist;
+  attribute float aChaosRank;
   varying float vMist;
   uniform float uPixelRatio;
   uniform float uSizeScale;
+  uniform float uChaosVisibility;
+  uniform float uIsChaos;
 
   void main() {
     vMist = aMist;
+    float visible = mix(1.0, step(aChaosRank, uChaosVisibility), uIsChaos);
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = aSize * uPixelRatio * uSizeScale;
+    gl_PointSize = aSize * uPixelRatio * uSizeScale * visible;
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -61,18 +65,42 @@ function createRandom(seed) {
 
 function getParticleCount(width, reducedMotion) {
   if (reducedMotion) {
-    return width < 720 ? 7200 : 12000;
+    return width < 720 ? 5200 : 9000;
   }
 
   if (width < 560) {
-    return 18000;
+    return 14000;
   }
 
   if (width < 920) {
-    return 28000;
+    return 22000;
   }
 
   return 52000;
+}
+
+function getChaosVisibility(width) {
+  if (width < 560) {
+    return 0.42;
+  }
+
+  if (width < 920) {
+    return 0.5;
+  }
+
+  return 0.62;
+}
+
+function getChaosSizeScale(width) {
+  if (width < 560) {
+    return 1.08;
+  }
+
+  if (width < 920) {
+    return 1.24;
+  }
+
+  return 1.68;
 }
 
 function createCanvas(width, height) {
@@ -204,7 +232,7 @@ function drawErminePath(context) {
   context.strokeStyle = '#000';
   context.fillStyle = '#000';
 
-  context.lineWidth = 24;
+  context.lineWidth = 18;
   context.beginPath();
   context.moveTo(430, 640);
   context.bezierCurveTo(500, 520, 492, 350, 548, 218);
@@ -215,14 +243,14 @@ function drawErminePath(context) {
   context.bezierCurveTo(766, 592, 782, 658, 806, 692);
   context.stroke();
 
-  context.lineWidth = 16;
+  context.lineWidth = 12;
   context.beginPath();
   context.moveTo(604, 236);
   context.bezierCurveTo(594, 174, 635, 132, 676, 174);
   context.stroke();
 
   context.beginPath();
-  context.ellipse(918, 306, 22, 18, 0, 0, Math.PI * 2);
+  context.ellipse(918, 306, 18, 15, 0, 0, Math.PI * 2);
   context.fill();
 
   context.beginPath();
@@ -247,12 +275,12 @@ function createErmineTargets(count, width, height) {
     bounds,
     width,
     height,
-    targetWidth: isDesktop ? width * 0.42 : width * 0.74,
-    targetHeight: isDesktop ? height * 0.56 : height * 0.38,
+    targetWidth: isDesktop ? width * 0.42 : width * 0.68,
+    targetHeight: isDesktop ? height * 0.56 : height * 0.3,
     centerX: isDesktop ? width * 0.24 : 0,
-    centerY: isDesktop ? -height * 0.01 : height * 0.08,
+    centerY: isDesktop ? -height * 0.01 : height * 0.14,
     seed: 1941,
-    jitter: isDesktop ? 1.05 : 0.8,
+    jitter: isDesktop ? 0.55 : 0.42,
   });
 }
 
@@ -260,22 +288,33 @@ function createChaosTargets(count, width, height) {
   const random = createRandom(4291 + Math.floor(width) * 7 + Math.floor(height));
   const targets = new Float32Array(count * 3);
   const isDesktop = width >= 900;
-  const centerBias = 0;
+  const cloudWidth = width * (isDesktop ? 1.08 : 1.16);
+  const bottomLimit = -height * 0.5;
+  const topBase = -height * (isDesktop ? 0.18 : 0.16);
+  const topLift = height * (isDesktop ? 0.2 : 0.17);
 
   for (let i = 0; i < count; i += 1) {
     const index = i * 3;
-    const angle = random() * Math.PI * 2;
-    const radius = Math.pow(random(), 0.72);
-    const spreadX = width * (isDesktop ? 0.52 : 0.7);
-    const spreadY = height * (isDesktop ? 0.36 : 0.46);
-    const veil = Math.sin(angle * 3.0 + random() * 1.4) * 22;
+    const xNorm = random() * 2 - 1;
+    const sideFalloff = Math.pow(Math.max(0, 1 - Math.abs(xNorm)), 0.42);
+    const surfaceWave =
+      Math.sin(xNorm * 7.2 + random() * 0.9) * height * (isDesktop ? 0.015 : 0.01);
+    const surfaceY = topBase + sideFalloff * topLift + surfaceWave;
+    const floorY = bottomLimit + (1 - sideFalloff) * height * 0.03;
+    const settledMix = Math.pow(random(), 1.65);
+    const drift =
+      Math.sin(settledMix * 5.5 + xNorm * 4.2) *
+      width *
+      (isDesktop ? 0.012 : 0.008);
 
     targets[index] =
-      centerBias +
-      Math.cos(angle) * spreadX * radius +
-      (random() - 0.5) * width * 0.11;
+      xNorm * cloudWidth * 0.5 * (0.96 + random() * 0.04) +
+      drift +
+      (random() - 0.5) * (isDesktop ? 22 : 14);
     targets[index + 1] =
-      Math.sin(angle) * spreadY * radius + veil + (random() - 0.5) * height * 0.08;
+      floorY +
+      (surfaceY - floorY) * settledMix +
+      (random() - 0.5) * (isDesktop ? 14 : 8);
     targets[index + 2] = (random() - 0.5) * 120;
   }
 
@@ -304,6 +343,19 @@ export default function ParticleHero() {
     const prefersReducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     ).matches;
+    let syncedViewportHeight = 0;
+
+    function syncViewportHeight() {
+      const viewportHeight = window.visualViewport?.height || window.innerHeight;
+      const roundedHeight = Math.round(viewportHeight);
+
+      if (roundedHeight !== syncedViewportHeight) {
+        syncedViewportHeight = roundedHeight;
+        document.documentElement.style.setProperty('--hero-vh', `${roundedHeight}px`);
+      }
+    }
+
+    syncViewportHeight();
 
     let width = Math.max(1, mount.clientWidth);
     let height = Math.max(1, mount.clientHeight);
@@ -324,7 +376,7 @@ export default function ParticleHero() {
     let previousBodyOverflow = '';
     let previousBodyTouchAction = '';
     let previousRootOverscroll = '';
-    let renderedSizeScale = state === STATE_CHAOS ? 2.08 : 1;
+    let renderedSizeScale = state === STATE_CHAOS ? getChaosSizeScale(width) : 1;
     const pointer = {
       active: false,
       x: 0,
@@ -360,6 +412,7 @@ export default function ParticleHero() {
     const amplitudes = new Float32Array(particleCount);
     const sizes = new Float32Array(particleCount);
     const mists = new Float32Array(particleCount);
+    const chaosRanks = new Float32Array(particleCount);
     const random = createRandom(7117);
 
     for (let i = 0; i < particleCount; i += 1) {
@@ -374,6 +427,7 @@ export default function ParticleHero() {
       sizes[i] =
         (width < 720 ? 1.15 : 1.45) + random() * (width < 720 ? 1.3 : 1.55);
       mists[i] = random();
+      chaosRanks[i] = random();
     }
 
     const geometry = new THREE.BufferGeometry();
@@ -382,6 +436,7 @@ export default function ParticleHero() {
     geometry.setAttribute('position', positionAttribute);
     geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
     geometry.setAttribute('aMist', new THREE.BufferAttribute(mists, 1));
+    geometry.setAttribute('aChaosRank', new THREE.BufferAttribute(chaosRanks, 1));
 
     const material = new THREE.ShaderMaterial({
       vertexShader,
@@ -394,6 +449,12 @@ export default function ParticleHero() {
         },
         uSizeScale: {
           value: renderedSizeScale,
+        },
+        uChaosVisibility: {
+          value: getChaosVisibility(width),
+        },
+        uIsChaos: {
+          value: state === STATE_CHAOS ? 1 : 0,
         },
         uInk: {
           value: new THREE.Color('#071a2d'),
@@ -601,11 +662,13 @@ export default function ParticleHero() {
     }
 
     function resize() {
+      syncViewportHeight();
       width = Math.max(1, mount.clientWidth);
       height = Math.max(1, mount.clientHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, width < 720 ? 1.5 : 2));
       renderer.setSize(width, height, false);
       material.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+      material.uniforms.uChaosVisibility.value = getChaosVisibility(width);
       setCamera(camera, width, height);
       chaosTargets = createChaosTargets(particleCount, width, height);
       nivoTargets = createTextTargets(particleCount, width, height);
@@ -659,11 +722,12 @@ export default function ParticleHero() {
           : 0.052;
       const damping = transitioning ? 0.83 : 0.875;
       const baseBreath = state === STATE_CHAOS ? 7.2 : 2.35;
-      const targetSizeScale = state === STATE_CHAOS ? 2.08 : 1;
+      const targetSizeScale = state === STATE_CHAOS ? getChaosSizeScale(width) : 1;
 
       pointer.force *= state === STATE_CHAOS ? 0.958 : 0.935;
       renderedSizeScale += (targetSizeScale - renderedSizeScale) * 0.08;
       material.uniforms.uSizeScale.value = renderedSizeScale;
+      material.uniforms.uIsChaos.value = state === STATE_CHAOS ? 1 : 0;
 
       for (let i = 0; i < particleCount; i += 1) {
         const index = i * 3;
@@ -757,6 +821,9 @@ export default function ParticleHero() {
     window.addEventListener('keydown', onKeyDown, {
       capture: true,
     });
+    window.addEventListener('resize', resize);
+    window.visualViewport?.addEventListener('resize', resize);
+    window.visualViewport?.addEventListener('scroll', resize);
 
     rafId = window.requestAnimationFrame(animate);
 
@@ -780,6 +847,9 @@ export default function ParticleHero() {
       window.removeEventListener('keydown', onKeyDown, {
         capture: true,
       });
+      window.removeEventListener('resize', resize);
+      window.visualViewport?.removeEventListener('resize', resize);
+      window.visualViewport?.removeEventListener('scroll', resize);
       scene.remove(points);
       geometry.dispose();
       material.dispose();
