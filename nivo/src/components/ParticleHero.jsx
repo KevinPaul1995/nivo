@@ -9,6 +9,24 @@ const TRANSITION_DURATION = 1850;
 const TEXT_SAMPLE_STEP = 3;
 const ERMINE_SAMPLE_STEP = 2;
 
+const PARTICLE_PALETTES = {
+  [STATE_CHAOS]: {
+    ink: '#07120f',
+    fog: '#2d3a34',
+    accent: '#000000',
+  },
+  [STATE_NIVO]: {
+    ink: '#07120f',
+    fog: '#2d3a34',
+    accent: '#000000',
+  },
+  [STATE_ERMINE]: {
+    ink: '#07120f',
+    fog: '#2d3a34',
+    accent: '#000000',
+  },
+};
+
 const vertexShader = `
   attribute float aSize;
   attribute float aMist;
@@ -65,42 +83,42 @@ function createRandom(seed) {
 
 function getParticleCount(width, reducedMotion) {
   if (reducedMotion) {
-    return width < 720 ? 5200 : 9000;
+    return width < 720 ? 2600 : 4600;
   }
 
   if (width < 560) {
-    return 14000;
+    return 5600;
   }
 
   if (width < 920) {
-    return 22000;
+    return 8800;
   }
 
-  return 52000;
+  return 19000;
 }
 
 function getChaosVisibility(width) {
   if (width < 560) {
-    return 0.42;
-  }
-
-  if (width < 920) {
     return 0.5;
   }
 
-  return 0.62;
+  if (width < 920) {
+    return 0.52;
+  }
+
+  return 0.56;
 }
 
 function getChaosSizeScale(width) {
   if (width < 560) {
-    return 1.08;
+    return 0.98;
   }
 
   if (width < 920) {
-    return 1.24;
+    return 1.08;
   }
 
-  return 1.68;
+  return 1.24;
 }
 
 function createCanvas(width, height) {
@@ -216,12 +234,12 @@ function createTextTargets(count, width, height) {
     bounds,
     width,
     height,
-    targetWidth: isDesktop ? width * 0.94 : width * 0.94,
-    targetHeight: isDesktop ? height * 0.38 : height * 0.3,
-    centerX: 0,
-    centerY: isDesktop ? -height * 0.01 : height * 0.08,
+    targetWidth: isDesktop ? width * 0.48 : width * 0.88,
+    targetHeight: isDesktop ? height * 0.27 : height * 0.24,
+    centerX: isDesktop ? width * 0.24 : 0,
+    centerY: isDesktop ? height * 0.02 : -height * 0.08,
     seed: 8128,
-    jitter: isDesktop ? 1.2 : 0.85,
+    jitter: isDesktop ? 0.85 : 0.65,
   });
 }
 
@@ -275,12 +293,12 @@ function createErmineTargets(count, width, height) {
     bounds,
     width,
     height,
-    targetWidth: isDesktop ? width * 0.42 : width * 0.68,
-    targetHeight: isDesktop ? height * 0.56 : height * 0.3,
-    centerX: isDesktop ? width * 0.24 : 0,
-    centerY: isDesktop ? -height * 0.01 : height * 0.14,
+    targetWidth: isDesktop ? width * 0.34 : width * 0.72,
+    targetHeight: isDesktop ? height * 0.5 : height * 0.27,
+    centerX: isDesktop ? -width * 0.23 : 0,
+    centerY: isDesktop ? -height * 0.02 : height * 0.23,
     seed: 1941,
-    jitter: isDesktop ? 0.55 : 0.42,
+    jitter: isDesktop ? 0.42 : 0.34,
   });
 }
 
@@ -288,33 +306,33 @@ function createChaosTargets(count, width, height) {
   const random = createRandom(4291 + Math.floor(width) * 7 + Math.floor(height));
   const targets = new Float32Array(count * 3);
   const isDesktop = width >= 900;
-  const cloudWidth = width * (isDesktop ? 1.08 : 1.16);
-  const bottomLimit = -height * 0.5;
-  const topBase = -height * (isDesktop ? 0.18 : 0.16);
-  const topLift = height * (isDesktop ? 0.2 : 0.17);
+  const panelRight = width * 0.52;
+  const panelLeft = width * (isDesktop ? -0.09 : -0.5);
+  const verticalReach = height * (isDesktop ? 0.54 : 0.5);
 
   for (let i = 0; i < count; i += 1) {
     const index = i * 3;
-    const xNorm = random() * 2 - 1;
-    const sideFalloff = Math.pow(Math.max(0, 1 - Math.abs(xNorm)), 0.42);
-    const surfaceWave =
-      Math.sin(xNorm * 7.2 + random() * 0.9) * height * (isDesktop ? 0.015 : 0.01);
-    const surfaceY = topBase + sideFalloff * topLift + surfaceWave;
-    const floorY = bottomLimit + (1 - sideFalloff) * height * 0.03;
-    const settledMix = Math.pow(random(), 1.65);
-    const drift =
-      Math.sin(settledMix * 5.5 + xNorm * 4.2) *
-      width *
+    const yNorm = random() * 2 - 1;
+    const cornerInset = Math.pow(Math.max(0, Math.abs(yNorm) - 0.72) / 0.28, 2);
+    const leftEdge = panelLeft + cornerInset * width * (isDesktop ? 0.055 : 0.035);
+    const spread = panelRight - leftEdge;
+    const xMix = random();
+    const waveX =
+      Math.sin(yNorm * 5.4 + random() * 0.8) * width * (isDesktop ? 0.01 : 0.007);
+    const waveY =
+      Math.cos(xMix * 5.6 + yNorm * 2.5) *
+      height *
       (isDesktop ? 0.012 : 0.008);
 
     targets[index] =
-      xNorm * cloudWidth * 0.5 * (0.96 + random() * 0.04) +
-      drift +
-      (random() - 0.5) * (isDesktop ? 22 : 14);
+      leftEdge +
+      xMix * spread +
+      waveX +
+      (random() - 0.5) * (isDesktop ? 14 : 9);
     targets[index + 1] =
-      floorY +
-      (surfaceY - floorY) * settledMix +
-      (random() - 0.5) * (isDesktop ? 14 : 8);
+      yNorm * verticalReach +
+      waveY +
+      (random() - 0.5) * (isDesktop ? 12 : 8);
     targets[index + 2] = (random() - 0.5) * 120;
   }
 
@@ -457,18 +475,35 @@ export default function ParticleHero() {
           value: state === STATE_CHAOS ? 1 : 0,
         },
         uInk: {
-          value: new THREE.Color('#071a2d'),
+          value: new THREE.Color(PARTICLE_PALETTES[state].ink),
         },
         uFog: {
-          value: new THREE.Color('#a7b8bb'),
+          value: new THREE.Color(PARTICLE_PALETTES[state].fog),
         },
         uAccent: {
-          value: new THREE.Color('#147c78'),
+          value: new THREE.Color(PARTICLE_PALETTES[state].accent),
         },
       },
     });
 
     const points = new THREE.Points(geometry, material);
+    const paletteTargets = {
+      [STATE_CHAOS]: {
+        ink: new THREE.Color(PARTICLE_PALETTES[STATE_CHAOS].ink),
+        fog: new THREE.Color(PARTICLE_PALETTES[STATE_CHAOS].fog),
+        accent: new THREE.Color(PARTICLE_PALETTES[STATE_CHAOS].accent),
+      },
+      [STATE_NIVO]: {
+        ink: new THREE.Color(PARTICLE_PALETTES[STATE_NIVO].ink),
+        fog: new THREE.Color(PARTICLE_PALETTES[STATE_NIVO].fog),
+        accent: new THREE.Color(PARTICLE_PALETTES[STATE_NIVO].accent),
+      },
+      [STATE_ERMINE]: {
+        ink: new THREE.Color(PARTICLE_PALETTES[STATE_ERMINE].ink),
+        fog: new THREE.Color(PARTICLE_PALETTES[STATE_ERMINE].fog),
+        accent: new THREE.Color(PARTICLE_PALETTES[STATE_ERMINE].accent),
+      },
+    };
     scene.add(points);
 
     function lockScroll() {
@@ -503,6 +538,18 @@ export default function ParticleHero() {
     function setVisualState(nextState) {
       if (hero) {
         hero.dataset.visualState = nextState;
+      }
+    }
+
+    function setTransitionTarget(nextState) {
+      if (hero) {
+        hero.dataset.transitionTarget = nextState;
+      }
+    }
+
+    function clearTransitionTarget() {
+      if (hero) {
+        delete hero.dataset.transitionTarget;
       }
     }
 
@@ -557,11 +604,12 @@ export default function ParticleHero() {
       state = next.nextState;
       setParticleState(state);
       setVisualState('transitioning');
+      setTransitionTarget(state);
       return true;
     }
 
     function updatePointer(clientX, clientY) {
-      const rect = mount.getBoundingClientRect();
+      const rect = umount.getBoundingClientRect();
 
       pointer.active = true;
       pointer.x = clientX - rect.left - width / 2;
@@ -702,6 +750,7 @@ export default function ParticleHero() {
           transitionFrom = null;
           transitionTo = null;
           setVisualState(state);
+          clearTransitionTarget();
           unlockScroll();
         }
       }
@@ -728,6 +777,11 @@ export default function ParticleHero() {
       renderedSizeScale += (targetSizeScale - renderedSizeScale) * 0.08;
       material.uniforms.uSizeScale.value = renderedSizeScale;
       material.uniforms.uIsChaos.value = state === STATE_CHAOS ? 1 : 0;
+
+      const targetPalette = paletteTargets[state] || paletteTargets[STATE_CHAOS];
+      material.uniforms.uInk.value.lerp(targetPalette.ink, 0.075);
+      material.uniforms.uFog.value.lerp(targetPalette.fog, 0.075);
+      material.uniforms.uAccent.value.lerp(targetPalette.accent, 0.075);
 
       for (let i = 0; i < particleCount; i += 1) {
         const index = i * 3;
@@ -833,6 +887,7 @@ export default function ParticleHero() {
       unlockScroll();
       if (hero) {
         delete hero.dataset.visualState;
+        delete hero.dataset.transitionTarget;
       }
       resizeObserver.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
