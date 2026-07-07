@@ -23,29 +23,11 @@ export const site = {
   },
 };
 
-export const heroProof = [
-  { value: 'Hogares', label: 'limpieza puntual o recurrente' },
-  { value: 'Oficinas', label: 'espacios listos para trabajar' },
-  { value: 'Empresas', label: 'servicio con alcance claro' },
-];
-
 export const coverageItems = [
-  {
-    city: 'Ibarra',
-    text: 'Limpieza para hogares, oficinas y negocios con agenda coordinada.',
-  },
-  {
-    city: 'Atuntaqui',
-    text: 'Atención para casas, locales y espacios de trabajo.',
-  },
-  {
-    city: 'Cotacachi',
-    text: 'Servicio puntual o recurrente según el movimiento del espacio.',
-  },
-  {
-    city: 'Otavalo',
-    text: 'Limpieza profesional para viviendas, oficinas y empresas.',
-  },
+  { city: 'Ibarra' },
+  { city: 'Atuntaqui' },
+  { city: 'Cotacachi' },
+  { city: 'Otavalo' },
 ];
 
 export const services = [
@@ -77,23 +59,23 @@ export const serviceNotes = [
 
 export const faqItems = [
   {
-    question: '¿Dónde atiende NIVO?',
+    question: '¿En qué ciudades trabaja NIVO?',
     answer:
-      'Trabajamos en Ibarra, Atuntaqui, Cotacachi y Otavalo. Si estás cerca de estas zonas, escríbenos para revisar disponibilidad.',
+      'Atendemos Ibarra, Atuntaqui, Cotacachi y Otavalo. Si tu ubicación está cerca de estas zonas, puedes escribirnos para revisar disponibilidad y coordinar el horario más conveniente.',
   },
   {
-    question: '¿Puedo contratar limpieza con materiales incluidos?',
+    question: '¿El servicio puede incluir materiales?',
     answer:
-      'Sí. También podemos trabajar sin materiales incluidos si prefieres usar productos propios o específicos para tu espacio.',
+      'Sí. Podemos cotizar con materiales incluidos o trabajar con los productos que ya tienes en tu casa, oficina o empresa. Lo definimos antes de agendar para que el alcance quede claro.',
   },
   {
-    question: '¿Atienden empresas además de casas?',
+    question: '¿Qué tipo de espacios limpian?',
     answer:
-      'Sí. Atendemos casas, oficinas, locales, consultorios y empresas que necesitan limpieza puntual o recurrente.',
+      'Trabajamos en casas, oficinas, locales, consultorios y empresas. El servicio puede ser puntual o recurrente, según el uso del espacio y el nivel de mantenimiento que necesitas.',
   },
   {
-    question: '¿Cómo cotizo?',
+    question: '¿Qué información ayuda para cotizar mejor?',
     answer:
-      'Escríbenos al 0996583089 o a contacto@nivolimpieza.com con ciudad, tipo de espacio, tamaño aproximado y frecuencia deseada.',
+      'Escríbenos al 0996583089 o a contacto@nivolimpieza.com con ciudad, tipo de espacio, tamaño aproximado, frecuencia deseada y si prefieres limpieza con o sin materiales incluidos. Si puedes enviar fotos, la cotización será más precisa.',
   },
 ];
