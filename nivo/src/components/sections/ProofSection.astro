@@ -2,29 +2,33 @@
 import { coverageItems, serviceNotes } from "../../data/siteContent";
 ---
 
-<section class="content-section coverage-section" id="calidad" aria-labelledby="coverage-title">
+<section class="content-section coverage-section" id="calidad" aria-labelledby="coverage-title" data-parallax-section>
   <div class="section-grid section-grid--split coverage-layout">
-    <div class="section-copy">
-      <span class="section-eyebrow">Cobertura local</span>
-      <h2 id="coverage-title">Limpieza profesional en Imbabura.</h2>
-      <p>
-        El mismo estándar para casas, oficinas y empresas: comunicación directa,
-        alcance definido y agenda clara desde el primer mensaje.
-      </p>
+    <div class="parallax-layer parallax-layer--copy">
+      <div class="section-copy">
+        <span class="section-eyebrow">Cobertura local</span>
+        <h2 id="coverage-title">Limpieza profesional en Imbabura.</h2>
+        <p>
+          El mismo estándar para casas, oficinas y empresas: comunicación directa,
+          alcance definido y agenda clara desde el primer mensaje.
+        </p>
+      </div>
     </div>
 
-    <div class="coverage-panel" aria-label="Zonas de cobertura NIVO">
-      {
-        coverageItems.map((item) => (
-          <article>
-            <h3>{item.city}</h3>
-          </article>
-        ))
-      }
+    <div class="parallax-layer parallax-layer--panel">
+      <div class="coverage-panel" aria-label="Zonas de cobertura NIVO">
+        {
+          coverageItems.map((item) => (
+            <article>
+              <h3>{item.city}</h3>
+            </article>
+          ))
+        }
+      </div>
     </div>
   </div>
 
-  <div class="standards-strip" aria-label="Diferenciales del servicio NIVO">
+  <div class="standards-strip parallax-layer parallax-layer--quiet" aria-label="Diferenciales del servicio NIVO">
     {
       serviceNotes.map((item) => (
         <span>{item}</span>

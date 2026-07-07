@@ -250,10 +250,10 @@ function createCleanTargets(count, width, height) {
   const isDesktop = isWideLayout(width, height);
   const random = createRandom(1947 + Math.floor(width) * 13 + Math.floor(height) * 3);
   const targets = new Float32Array(count * 3);
-  const targetWidth = isDesktop ? width * 0.34 : width * 0.56;
-  const targetHeight = isDesktop ? height * 0.58 : height * 0.32;
+  const targetWidth = isDesktop ? width * 0.34 : width * 0.54;
+  const targetHeight = isDesktop ? height * 0.58 : height * 0.3;
   const centerX = isDesktop ? -width * 0.25 : 0;
-  const centerY = isDesktop ? -height * 0.02 : height * 0.08;
+  const centerY = isDesktop ? -height * 0.02 : height * 0.16;
   const scale = Math.min(targetWidth / 330, targetHeight / 470);
 
   for (let i = 0; i < count; i += 1) {
@@ -370,12 +370,6 @@ export default function ParticleHero() {
     let previousBodyOverflow = '';
     let previousBodyTouchAction = '';
     let previousRootOverscroll = '';
-    let previousBodyPosition = '';
-    let previousBodyTop = '';
-    let previousBodyLeft = '';
-    let previousBodyRight = '';
-    let previousBodyWidth = '';
-    let previousBodyMaxWidth = '';
     let previousRootOverflow = '';
     let previousRootOverflowX = '';
     let lockedScrollY = 0;
@@ -501,23 +495,12 @@ export default function ParticleHero() {
       window.scrollTo(0, lockedScrollY);
       previousBodyOverflow = document.body.style.overflow;
       previousBodyTouchAction = document.body.style.touchAction;
-      previousBodyPosition = document.body.style.position;
-      previousBodyTop = document.body.style.top;
-      previousBodyLeft = document.body.style.left;
-      previousBodyRight = document.body.style.right;
-      previousBodyWidth = document.body.style.width;
-      previousBodyMaxWidth = document.body.style.maxWidth;
       previousRootOverflow = document.documentElement.style.overflow;
       previousRootOverflowX = document.documentElement.style.overflowX;
       previousRootOverscroll = document.documentElement.style.overscrollBehavior;
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${lockedScrollY}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = `${window.innerWidth}px`;
-      document.body.style.maxWidth = '100%';
+      document.documentElement.classList.add('is-scroll-locked');
       document.documentElement.style.overflow = 'hidden';
       document.documentElement.style.overflowX = 'hidden';
       document.documentElement.style.overscrollBehavior = 'none';
@@ -531,12 +514,7 @@ export default function ParticleHero() {
       locked = false;
       document.body.style.overflow = previousBodyOverflow;
       document.body.style.touchAction = previousBodyTouchAction;
-      document.body.style.position = previousBodyPosition;
-      document.body.style.top = previousBodyTop;
-      document.body.style.left = previousBodyLeft;
-      document.body.style.right = previousBodyRight;
-      document.body.style.width = previousBodyWidth;
-      document.body.style.maxWidth = previousBodyMaxWidth;
+      document.documentElement.classList.remove('is-scroll-locked');
       document.documentElement.style.overflow = previousRootOverflow;
       document.documentElement.style.overflowX = previousRootOverflowX;
       document.documentElement.style.overscrollBehavior = previousRootOverscroll;
@@ -824,7 +802,7 @@ export default function ParticleHero() {
 
       const isCleanModel = state === STATE_CLEAN && !transitioning;
       const cleanCenterX = isWideLayout(width, height) ? -width * 0.25 : 0;
-      const cleanCenterY = isWideLayout(width, height) ? -height * 0.02 : height * 0.08;
+      const cleanCenterY = isWideLayout(width, height) ? -height * 0.02 : height * 0.16;
       const cleanYaw =
         Math.sin(time * 0.68) * 0.46 +
         (pointer.active ? (pointer.x / width) * 0.035 : 0);

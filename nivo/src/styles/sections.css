@@ -1,11 +1,37 @@
 .content-section {
   position: relative;
+  isolation: isolate;
   width: 100%;
   max-width: 100%;
   padding: var(--section-y) var(--page-gutter);
   overflow-x: hidden;
   overflow-x: clip;
   background: var(--color-bg);
+  --parallax-a: 0px;
+  --parallax-b: 0px;
+  --parallax-c: 0px;
+  --section-progress: 0;
+  --parallax-r: 0deg;
+  --parallax-r-inverse: 0deg;
+}
+
+.parallax-layer {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  will-change: transform;
+}
+
+.parallax-layer--copy {
+  transform: translate3d(0, var(--parallax-a), 0);
+}
+
+.parallax-layer--panel {
+  transform: translate3d(0, var(--parallax-b), 0);
+}
+
+.parallax-layer--quiet {
+  transform: translate3d(0, var(--parallax-c), 0);
 }
 
 .section-grid {
@@ -122,7 +148,7 @@
 
 .coverage-panel article:hover {
   background: #ffffff;
-  transform: translateY(-2px);
+  transform: translateY(-4px);
 }
 
 .coverage-panel h3 {
@@ -172,7 +198,7 @@
 
 .services-section {
   color: var(--color-text);
-  background: #e9f2df;
+  background: #ffffff;
 }
 
 .services-section .section-eyebrow,
@@ -185,26 +211,31 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: min(1180px, 100%);
   max-width: 100%;
-  gap: 1px;
+  gap: 0;
   margin: 0 auto;
-  background: rgba(7, 18, 15, 0.16);
+  background: transparent;
 }
 
 .service-card {
   display: grid;
   align-content: start;
+  height: 100%;
   min-height: 340px;
   gap: 18px;
   padding: clamp(24px, 3vw, 40px);
-  background: #eef6e6;
+  border: 1px solid rgba(7, 18, 15, 0.12);
+  background: #fbfaf5;
+  box-shadow: 0 18px 48px rgba(7, 18, 15, 0.045);
   transition:
     background 220ms ease,
+    box-shadow 220ms ease,
     transform 220ms ease;
 }
 
 .service-card:hover {
-  background: #f7fbf2;
-  transform: translateY(-3px);
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(7, 18, 15, 0.07);
+  transform: translateY(-6px);
 }
 
 .service-card h3 {
@@ -265,6 +296,14 @@
 .faq-list details {
   border-bottom: 1px solid var(--color-border);
   background: transparent;
+  transition:
+    background 180ms ease,
+    padding 180ms ease;
+}
+
+.faq-list details[open] {
+  background: rgba(255, 255, 255, 0.4);
+  padding-inline: clamp(14px, 2vw, 22px);
 }
 
 .faq-list summary {
@@ -325,7 +364,16 @@
   padding: clamp(28px, 5vw, 66px);
   border: 1px solid rgba(7, 18, 15, 0.12);
   color: var(--color-text);
-  background: #dff0cf;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(7, 18, 15, 0.07);
+  transition:
+    transform 260ms ease,
+    box-shadow 260ms ease;
+}
+
+.contact-card:hover {
+  box-shadow: 0 34px 110px rgba(7, 18, 15, 0.1);
+  transform: translateY(-4px);
 }
 
 .contact-card .section-eyebrow,
@@ -513,8 +561,10 @@
   .coverage-panel,
   .service-card,
   .faq-list,
-  .contact-card {
+  .contact-card,
+  .parallax-layer {
     animation: none;
     transition: none;
+    transform: none;
   }
 }

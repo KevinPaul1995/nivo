@@ -2,23 +2,27 @@
 import { faqItems } from "../../data/siteContent";
 ---
 
-<section class="content-section faq-section" aria-labelledby="faq-title">
+<section class="content-section faq-section" aria-labelledby="faq-title" data-parallax-section>
   <div class="section-grid section-grid--split">
-    <div class="section-copy">
-      <span class="section-eyebrow">Preguntas frecuentes</span>
-      <h2 id="faq-title">Antes de agendar, dejemos claro lo importante.</h2>
-      <p>Así evitamos visitas improvisadas, costos confusos o expectativas distintas sobre el alcance del servicio.</p>
+    <div class="parallax-layer parallax-layer--copy">
+      <div class="section-copy">
+        <span class="section-eyebrow">Preguntas frecuentes</span>
+        <h2 id="faq-title">Lo básico para coordinar tu limpieza.</h2>
+        <p>Revisa cobertura, materiales, tipos de espacio y datos útiles para recibir una cotización más precisa.</p>
+      </div>
     </div>
 
-    <div class="faq-list">
-      {
-        faqItems.map((item) => (
-          <details>
-            <summary>{item.question}</summary>
-            <p>{item.answer}</p>
-          </details>
-        ))
-      }
+    <div class="parallax-layer parallax-layer--panel">
+      <div class="faq-list">
+        {
+          faqItems.map((item) => (
+            <details>
+              <summary>{item.question}</summary>
+              <p>{item.answer}</p>
+            </details>
+          ))
+        }
+      </div>
     </div>
   </div>
 </section>

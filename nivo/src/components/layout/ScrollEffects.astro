@@ -1,0 +1,53 @@
+<script is:inline>
+  (() => {
+    const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sections = Array.from(document.querySelectorAll("main > .content-section[data-parallax-section]"))
+      .filter((section) => !section.closest(".hero"));
+
+    if (!sections.length || reduceMotionQuery.matches) {
+      return;
+    }
+
+    let frame = 0;
+
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+    const update = () => {
+      frame = 0;
+
+      const viewportHeight = window.visualViewport?.height || window.innerHeight || 1;
+
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        const progress = clamp((viewportHeight - rect.top) / (viewportHeight + rect.height), 0, 1);
+        const centered = progress - 0.5;
+
+        const compact = window.innerWidth < 760;
+        const copyRange = compact ? -126 : -320;
+        const panelRange = compact ? 112 : 260;
+        const quietRange = compact ? -72 : -180;
+        const rotationRange = compact ? 0 : 3.2;
+
+        section.style.setProperty("--parallax-a", `${(centered * copyRange).toFixed(2)}px`);
+        section.style.setProperty("--parallax-b", `${(centered * panelRange).toFixed(2)}px`);
+        section.style.setProperty("--parallax-c", `${(centered * quietRange).toFixed(2)}px`);
+        section.style.setProperty("--parallax-r", `${(centered * rotationRange).toFixed(3)}deg`);
+        section.style.setProperty("--parallax-r-inverse", `${(centered * -rotationRange).toFixed(3)}deg`);
+        section.style.setProperty("--section-progress", progress.toFixed(3));
+      });
+    };
+
+    const requestUpdate = () => {
+      if (frame) {
+        return;
+      }
+
+      frame = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    window.visualViewport?.addEventListener("resize", requestUpdate);
+  })();
+</script>
