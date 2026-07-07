@@ -1,22 +1,30 @@
----
-import QuoteWizard from "../QuoteWizard.jsx";
----
+<section class="content-section quote-section" id="cotizar">
+  <div class="section-grid quote-landing">
+    <div class="quote-landing__copy parallax-layer parallax-layer--copy">
+      <span class="section-eyebrow">Cotización guiada</span>
+      <h2>Cotiza sin llenar un formulario enorme.</h2>
+      <p>
+        La landing se mantiene limpia. La cotización completa vive en una experiencia paso a paso:
+        ambientes, baños, cocina, vidrios, camas, muebles, mascotas, ciudad y extras.
+      </p>
 
-<section class="content-section quote-section" id="cotizacion" aria-labelledby="quote-title" data-parallax-section>
-  <div class="section-grid section-grid--split quote-layout">
-    <div class="parallax-layer parallax-layer--copy">
-      <div class="section-copy">
-        <span class="section-eyebrow">Cotización guiada</span>
-        <h2 id="quote-title">Calcula un valor inicial en menos de un minuto.</h2>
-        <p>
-          Responde unas preguntas rápidas sobre tu espacio y recibe un estimado
-          para limpieza de casas, oficinas o empresas.
-        </p>
+      <div class="quote-landing__actions">
+        <a class="quote-cta" href="/cotizar">Iniciar cotización</a>
+        <span>Estimado inicial · WhatsApp ordenado · Confirmación con fotos</span>
       </div>
     </div>
 
-    <div class="parallax-layer parallax-layer--panel">
-      <QuoteWizard client:load />
-    </div>
+    <aside class="quote-landing-card parallax-layer parallax-layer--panel" aria-label="Resumen del cotizador NIVO">
+      <span>Proceso NIVO</span>
+      <strong>7 pasos</strong>
+      <p>
+        Guiamos al cliente para evitar precios improvisados y recibir datos útiles antes de cerrar el servicio.
+      </p>
+      <ul>
+        <li>Ambientes y cantidades</li>
+        <li>Extras y nivel de suciedad</li>
+        <li>Rango referencial y envío por WhatsApp</li>
+      </ul>
+    </aside>
   </div>
 </section>

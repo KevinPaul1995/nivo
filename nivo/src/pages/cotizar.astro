@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import QuoteWizard from '../components/QuoteWizard.jsx';
+---
+
+<BaseLayout
+  title="Cotizar limpieza | NIVO Servicios de limpieza en Imbabura"
+  description="Cotiza servicios de limpieza para casas, departamentos, oficinas y locales en Ibarra, Otavalo, Atuntaqui, Cotacachi y otros sectores de Imbabura."
+  canonical="https://nivolimpieza.com/cotizar"
+>
+  <main class="quote-page">
+    <section class="quote-page-hero">
+      <a class="quote-page-hero__back" href="/">← Volver al inicio</a>
+      <span class="section-eyebrow">Cotizador NIVO</span>
+      <h1>Calcula un estimado inicial paso a paso.</h1>
+      <p>
+        No es un precio cerrado. Es una referencia profesional para conversar mejor por WhatsApp y
+        confirmar el valor final con fotos, acceso, estado del espacio y alcance exacto.
+      </p>
+    </section>
+
+    <QuoteWizard client:load />
+  </main>
+</BaseLayout>
