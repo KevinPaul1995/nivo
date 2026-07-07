@@ -1,0 +1,35 @@
+---
+import { services, serviceNotes } from "../../data/siteContent";
+---
+
+<section class="content-section services-section" id="servicios" aria-labelledby="services-title">
+  <div class="section-heading section-heading--center">
+    <span class="section-eyebrow">Servicios</span>
+    <h2 id="services-title">Limpieza pensada para tu rutina.</h2>
+    <p>Contrata una visita puntual o recurrente sin convertir la coordinación en otro pendiente.</p>
+  </div>
+
+  <div class="services-grid">
+    {
+      services.map((service) => (
+        <article class="service-card">
+          <h3>{service.title}</h3>
+          <p>{service.description}</p>
+          <ul>
+            {service.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </article>
+      ))
+    }
+  </div>
+
+  <div class="service-note" aria-label="Modalidades de servicio">
+    {
+      serviceNotes.map((item) => (
+        <span>{item}</span>
+      ))
+    }
+  </div>
+</section>

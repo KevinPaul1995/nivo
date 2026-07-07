@@ -1,0 +1,24 @@
+---
+import { faqItems } from "../../data/siteContent";
+---
+
+<section class="content-section faq-section" aria-labelledby="faq-title">
+  <div class="section-grid section-grid--split">
+    <div class="section-copy">
+      <span class="section-eyebrow">Preguntas frecuentes</span>
+      <h2 id="faq-title">Lo que conviene saber antes de agendar.</h2>
+      <p>Respuestas directas sobre cobertura, materiales y cotización.</p>
+    </div>
+
+    <div class="faq-list">
+      {
+        faqItems.map((item) => (
+          <details>
+            <summary>{item.question}</summary>
+            <p>{item.answer}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>

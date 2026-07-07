@@ -3,11 +3,10 @@ import * as THREE from 'three';
 
 const STATE_CHAOS = 'chaos';
 const STATE_NIVO = 'nivo';
-const STATE_ERMINE = 'ermine';
+const STATE_CLEAN = 'clean';
 
 const TRANSITION_DURATION = 1850;
 const TEXT_SAMPLE_STEP = 3;
-const ERMINE_SAMPLE_STEP = 2;
 
 const PARTICLE_PALETTES = {
   [STATE_CHAOS]: {
@@ -20,12 +19,16 @@ const PARTICLE_PALETTES = {
     fog: '#2d3a34',
     accent: '#000000',
   },
-  [STATE_ERMINE]: {
-    ink: '#07120f',
-    fog: '#2d3a34',
-    accent: '#000000',
+  [STATE_CLEAN]: {
+    ink: '#ffffff',
+    fog: '#aeb8b8',
+    accent: '#ffffff',
   },
 };
+
+function isWideLayout(width, height) {
+  return width >= 820 && width / Math.max(1, height) >= 1.04;
+}
 
 const vertexShader = `
   attribute float aSize;
@@ -99,14 +102,14 @@ function getParticleCount(width, reducedMotion) {
 
 function getChaosVisibility(width) {
   if (width < 560) {
-    return 0.5;
+    return 0.46;
   }
 
   if (width < 920) {
-    return 0.52;
+    return 0.48;
   }
 
-  return 0.56;
+  return 0.5;
 }
 
 function getChaosSizeScale(width) {
@@ -222,11 +225,11 @@ function createTextTargets(count, width, height) {
   context.fillStyle = '#000';
   context.textBaseline = 'middle';
   context.font =
-    '800 325px "Arial Narrow", "Avenir Next Condensed", "Helvetica Neue", Arial, sans-serif';
-  drawSpacedText(context, 'NIVO', canvas.width / 2, canvas.height / 2 + 12, 60);
+    '900 330px "Arial Black", "Archivo", "Helvetica Neue", Arial, sans-serif';
+  drawSpacedText(context, 'NIVO', canvas.width / 2, canvas.height / 2 + 12, 78);
 
   const { points, bounds } = collectOpaquePixels(canvas, TEXT_SAMPLE_STEP);
-  const isDesktop = width >= 900;
+  const isDesktop = isWideLayout(width, height);
 
   return convertPixelsToTargets({
     count,
@@ -243,72 +246,44 @@ function createTextTargets(count, width, height) {
   });
 }
 
-function drawErminePath(context) {
-  context.clearRect(0, 0, 1400, 720);
-  context.lineCap = 'round';
-  context.lineJoin = 'round';
-  context.strokeStyle = '#000';
-  context.fillStyle = '#000';
+function createCleanTargets(count, width, height) {
+  const isDesktop = isWideLayout(width, height);
+  const random = createRandom(1947 + Math.floor(width) * 13 + Math.floor(height) * 3);
+  const targets = new Float32Array(count * 3);
+  const targetWidth = isDesktop ? width * 0.34 : width * 0.62;
+  const targetHeight = isDesktop ? height * 0.58 : height * 0.38;
+  const centerX = isDesktop ? -width * 0.25 : 0;
+  const centerY = isDesktop ? -height * 0.02 : -height * 0.22;
+  const scale = Math.min(targetWidth / 330, targetHeight / 470);
 
-  context.lineWidth = 18;
-  context.beginPath();
-  context.moveTo(430, 640);
-  context.bezierCurveTo(500, 520, 492, 350, 548, 218);
-  context.bezierCurveTo(510, 138, 596, 62, 690, 156);
-  context.bezierCurveTo(802, 108, 990, 150, 1070, 305);
-  context.bezierCurveTo(1136, 326, 1162, 366, 1128, 414);
-  context.bezierCurveTo(1068, 500, 925, 456, 842, 526);
-  context.bezierCurveTo(766, 592, 782, 658, 806, 692);
-  context.stroke();
+  for (let i = 0; i < count; i += 1) {
+    const index = i * 3;
 
-  context.lineWidth = 12;
-  context.beginPath();
-  context.moveTo(604, 236);
-  context.bezierCurveTo(594, 174, 635, 132, 676, 174);
-  context.stroke();
+    const t = Math.pow(random(), 0.9);
+    const phi = random() * Math.PI * 2;
+    const profile =
+      Math.pow(Math.sin(t * Math.PI), 0.58) * (0.46 + 0.58 * t);
+    const belly = 1 + Math.sin(t * Math.PI) * t * 0.34;
+    const shell = 0.78 + Math.pow(random(), 0.42) * 0.22;
+    const localX = Math.cos(phi) * profile * belly * shell * 142;
+    const localZ = Math.sin(phi) * profile * shell * 106;
+    const localY = 222 - t * 474 + t * t * 72;
 
-  context.beginPath();
-  context.ellipse(918, 306, 18, 15, 0, 0, Math.PI * 2);
-  context.fill();
+    targets[index] = centerX + localX * scale;
+    targets[index + 1] = centerY + localY * scale;
+    targets[index + 2] = localZ * scale;
+  }
 
-  context.beginPath();
-  context.moveTo(1074, 355);
-  context.bezierCurveTo(1124, 340, 1135, 374, 1097, 396);
-  context.bezierCurveTo(1080, 388, 1064, 374, 1074, 355);
-  context.fill();
-}
-
-function createErmineTargets(count, width, height) {
-  const canvas = createCanvas(1400, 720);
-  const context = canvas.getContext('2d');
-
-  drawErminePath(context);
-
-  const { points, bounds } = collectOpaquePixels(canvas, ERMINE_SAMPLE_STEP);
-  const isDesktop = width >= 900;
-
-  return convertPixelsToTargets({
-    count,
-    pixels: points,
-    bounds,
-    width,
-    height,
-    targetWidth: isDesktop ? width * 0.34 : width * 0.72,
-    targetHeight: isDesktop ? height * 0.5 : height * 0.27,
-    centerX: isDesktop ? -width * 0.23 : 0,
-    centerY: isDesktop ? -height * 0.02 : height * 0.23,
-    seed: 1941,
-    jitter: isDesktop ? 0.42 : 0.34,
-  });
+  return targets;
 }
 
 function createChaosTargets(count, width, height) {
   const random = createRandom(4291 + Math.floor(width) * 7 + Math.floor(height));
   const targets = new Float32Array(count * 3);
-  const isDesktop = width >= 900;
-  const panelRight = width * 0.52;
-  const panelLeft = width * (isDesktop ? -0.09 : -0.5);
-  const verticalReach = height * (isDesktop ? 0.54 : 0.5);
+  const isDesktop = isWideLayout(width, height);
+  const panelRight = width * 0.54;
+  const panelLeft = width * (isDesktop ? -0.23 : -0.5);
+  const verticalReach = height * (isDesktop ? 0.7 : 0.5);
 
   for (let i = 0; i < count; i += 1) {
     const index = i * 3;
@@ -316,7 +291,7 @@ function createChaosTargets(count, width, height) {
     const cornerInset = Math.pow(Math.max(0, Math.abs(yNorm) - 0.72) / 0.28, 2);
     const leftEdge = panelLeft + cornerInset * width * (isDesktop ? 0.055 : 0.035);
     const spread = panelRight - leftEdge;
-    const xMix = random();
+    const xMix = isDesktop ? Math.pow(random(), 0.46) : random();
     const waveX =
       Math.sin(yNorm * 5.4 + random() * 0.8) * width * (isDesktop ? 0.01 : 0.007);
     const waveY =
@@ -328,11 +303,11 @@ function createChaosTargets(count, width, height) {
       leftEdge +
       xMix * spread +
       waveX +
-      (random() - 0.5) * (isDesktop ? 14 : 9);
+      (random() - 0.5) * (isDesktop ? 12 : 8);
     targets[index + 1] =
       yNorm * verticalReach +
       waveY +
-      (random() - 0.5) * (isDesktop ? 12 : 8);
+      (random() - 0.5) * (isDesktop ? 10 : 7);
     targets[index + 2] = (random() - 0.5) * 120;
   }
 
@@ -380,7 +355,7 @@ export default function ParticleHero() {
     const particleCount = getParticleCount(width, prefersReducedMotion);
     let chaosTargets = createChaosTargets(particleCount, width, height);
     let nivoTargets = createTextTargets(particleCount, width, height);
-    let ermineTargets = createErmineTargets(particleCount, width, height);
+    let cleanTargets = createCleanTargets(particleCount, width, height);
     let activeTargets = prefersReducedMotion ? nivoTargets : chaosTargets;
     let state = prefersReducedMotion ? STATE_NIVO : STATE_CHAOS;
     let transitionFrom = null;
@@ -391,9 +366,14 @@ export default function ParticleHero() {
     let rafId = 0;
     let destroyed = false;
     let touchStartY = 0;
+    let touchStartedInSequence = false;
     let previousBodyOverflow = '';
     let previousBodyTouchAction = '';
     let previousRootOverscroll = '';
+    let previousBodyPosition = '';
+    let previousBodyTop = '';
+    let previousBodyWidth = '';
+    let lockedScrollY = 0;
     let renderedSizeScale = state === STATE_CHAOS ? getChaosSizeScale(width) : 1;
     const pointer = {
       active: false,
@@ -498,10 +478,10 @@ export default function ParticleHero() {
         fog: new THREE.Color(PARTICLE_PALETTES[STATE_NIVO].fog),
         accent: new THREE.Color(PARTICLE_PALETTES[STATE_NIVO].accent),
       },
-      [STATE_ERMINE]: {
-        ink: new THREE.Color(PARTICLE_PALETTES[STATE_ERMINE].ink),
-        fog: new THREE.Color(PARTICLE_PALETTES[STATE_ERMINE].fog),
-        accent: new THREE.Color(PARTICLE_PALETTES[STATE_ERMINE].accent),
+      [STATE_CLEAN]: {
+        ink: new THREE.Color(PARTICLE_PALETTES[STATE_CLEAN].ink),
+        fog: new THREE.Color(PARTICLE_PALETTES[STATE_CLEAN].fog),
+        accent: new THREE.Color(PARTICLE_PALETTES[STATE_CLEAN].accent),
       },
     };
     scene.add(points);
@@ -512,11 +492,19 @@ export default function ParticleHero() {
       }
 
       locked = true;
+      lockedScrollY = Math.round(hero?.offsetTop ?? window.scrollY);
+      window.scrollTo(0, lockedScrollY);
       previousBodyOverflow = document.body.style.overflow;
       previousBodyTouchAction = document.body.style.touchAction;
+      previousBodyPosition = document.body.style.position;
+      previousBodyTop = document.body.style.top;
+      previousBodyWidth = document.body.style.width;
       previousRootOverscroll = document.documentElement.style.overscrollBehavior;
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${lockedScrollY}px`;
+      document.body.style.width = '100%';
       document.documentElement.style.overscrollBehavior = 'none';
     }
 
@@ -528,7 +516,11 @@ export default function ParticleHero() {
       locked = false;
       document.body.style.overflow = previousBodyOverflow;
       document.body.style.touchAction = previousBodyTouchAction;
+      document.body.style.position = previousBodyPosition;
+      document.body.style.top = previousBodyTop;
+      document.body.style.width = previousBodyWidth;
       document.documentElement.style.overscrollBehavior = previousRootOverscroll;
+      window.scrollTo(0, lockedScrollY);
     }
 
     function setParticleState(nextState) {
@@ -553,6 +545,17 @@ export default function ParticleHero() {
       }
     }
 
+    function isHeroSequenceActive() {
+      if (!hero) {
+        return true;
+      }
+
+      const rect = hero.getBoundingClientRect();
+      const viewportHeight = window.visualViewport?.height || window.innerHeight || height;
+
+      return rect.top <= 2 && rect.bottom >= viewportHeight * 0.56;
+    }
+
     function getTransitionTargets(direction) {
       if (direction > 0 && state === STATE_CHAOS) {
         return {
@@ -563,12 +566,12 @@ export default function ParticleHero() {
 
       if (direction > 0 && state === STATE_NIVO) {
         return {
-          nextState: STATE_ERMINE,
-          nextTargets: ermineTargets,
+          nextState: STATE_CLEAN,
+          nextTargets: cleanTargets,
         };
       }
 
-      if (direction < 0 && state === STATE_ERMINE) {
+      if (direction < 0 && state === STATE_CLEAN) {
         return {
           nextState: STATE_NIVO,
           nextTargets: nivoTargets,
@@ -609,7 +612,7 @@ export default function ParticleHero() {
     }
 
     function updatePointer(clientX, clientY) {
-      const rect = umount.getBoundingClientRect();
+      const rect = mount.getBoundingClientRect();
 
       pointer.active = true;
       pointer.x = clientX - rect.left - width / 2;
@@ -627,6 +630,7 @@ export default function ParticleHero() {
 
     function onTouchStart(event) {
       touchStartY = event.touches[0]?.clientY ?? 0;
+      touchStartedInSequence = isHeroSequenceActive();
 
       if (event.touches[0]) {
         updatePointer(event.touches[0].clientX, event.touches[0].clientY);
@@ -647,6 +651,10 @@ export default function ParticleHero() {
         return;
       }
 
+      if (!touchStartedInSequence) {
+        return;
+      }
+
       const currentY = event.touches[0]?.clientY ?? touchStartY;
       const deltaY = touchStartY - currentY;
 
@@ -664,6 +672,10 @@ export default function ParticleHero() {
       }
 
       if (prefersReducedMotion) {
+        return;
+      }
+
+      if (!isHeroSequenceActive()) {
         return;
       }
 
@@ -699,6 +711,10 @@ export default function ParticleHero() {
         return;
       }
 
+      if (!isHeroSequenceActive()) {
+        return;
+      }
+
       const direction =
         event.key === 'PageUp' || event.key === 'ArrowUp' || event.shiftKey
           ? -1
@@ -720,14 +736,14 @@ export default function ParticleHero() {
       setCamera(camera, width, height);
       chaosTargets = createChaosTargets(particleCount, width, height);
       nivoTargets = createTextTargets(particleCount, width, height);
-      ermineTargets = createErmineTargets(particleCount, width, height);
+      cleanTargets = createCleanTargets(particleCount, width, height);
 
       if (state === STATE_CHAOS) {
         activeTargets = chaosTargets;
       } else if (state === STATE_NIVO) {
         activeTargets = nivoTargets;
       } else {
-        activeTargets = ermineTargets;
+        activeTargets = cleanTargets;
       }
     }
 
@@ -763,15 +779,18 @@ export default function ParticleHero() {
       const radiusSq = radius * radius;
       const cursorPower = pointer.active ? pointer.force : pointer.force * 0.75;
       const interactionStrength =
-        (state === STATE_CHAOS ? 128 : 46) * cursorPower * (width < 720 ? 0.82 : 1);
+        (state === STATE_CHAOS ? 128 : state === STATE_CLEAN ? 34 : 46) *
+        cursorPower *
+        (width < 720 ? 0.82 : 1);
       const stiffness = transitioning
         ? 0.085
         : state === STATE_CHAOS
           ? 0.031
           : 0.052;
       const damping = transitioning ? 0.83 : 0.875;
-      const baseBreath = state === STATE_CHAOS ? 7.2 : 2.35;
-      const targetSizeScale = state === STATE_CHAOS ? getChaosSizeScale(width) : 1;
+      const baseBreath = state === STATE_CHAOS ? 7.2 : state === STATE_CLEAN ? 1.35 : 2.35;
+      const targetSizeScale =
+        state === STATE_CHAOS ? getChaosSizeScale(width) : state === STATE_CLEAN ? 0.9 : 1;
 
       pointer.force *= state === STATE_CHAOS ? 0.958 : 0.935;
       renderedSizeScale += (targetSizeScale - renderedSizeScale) * 0.08;
@@ -782,6 +801,23 @@ export default function ParticleHero() {
       material.uniforms.uInk.value.lerp(targetPalette.ink, 0.075);
       material.uniforms.uFog.value.lerp(targetPalette.fog, 0.075);
       material.uniforms.uAccent.value.lerp(targetPalette.accent, 0.075);
+
+      const isCleanModel = state === STATE_CLEAN && !transitioning;
+      const cleanCenterX = isWideLayout(width, height) ? -width * 0.25 : 0;
+      const cleanCenterY = isWideLayout(width, height) ? -height * 0.02 : -height * 0.22;
+      const cleanYaw =
+        Math.sin(time * 0.68) * 0.46 +
+        (pointer.active ? (pointer.x / width) * 0.035 : 0);
+      const cleanPitch = Math.sin(time * 0.52 + 1.3) * 0.16;
+      const cleanRoll = Math.cos(time * 0.36) * 0.08;
+      const cleanYawCos = Math.cos(cleanYaw);
+      const cleanYawSin = Math.sin(cleanYaw);
+      const cleanPitchCos = Math.cos(cleanPitch);
+      const cleanPitchSin = Math.sin(cleanPitch);
+      const cleanRollCos = Math.cos(cleanRoll);
+      const cleanRollSin = Math.sin(cleanRoll);
+      const cleanFloat = Math.sin(time * 0.72) * (width < 720 ? 3 : 5);
+      const cleanBreath = 1 + Math.sin(time * 0.58) * 0.008;
 
       for (let i = 0; i < particleCount; i += 1) {
         const index = i * 3;
@@ -813,6 +849,20 @@ export default function ParticleHero() {
           targetX = activeTargets[index];
           targetY = activeTargets[index + 1];
           targetZ = activeTargets[index + 2];
+        }
+
+        if (isCleanModel) {
+          const modelX = (targetX - cleanCenterX) * cleanBreath;
+          const modelY = (targetY - cleanCenterY) * cleanBreath;
+          const modelZ = targetZ * cleanBreath;
+          const rollX = modelX * cleanRollCos - modelY * cleanRollSin;
+          const rollY = modelX * cleanRollSin + modelY * cleanRollCos;
+          const pitchY = rollY * cleanPitchCos - modelZ * cleanPitchSin;
+          const pitchZ = rollY * cleanPitchSin + modelZ * cleanPitchCos;
+
+          targetX = cleanCenterX + rollX * cleanYawCos - pitchZ * cleanYawSin;
+          targetY = cleanCenterY + pitchY + cleanFloat;
+          targetZ = rollX * cleanYawSin + pitchZ * cleanYawCos;
         }
 
         targetX += organic;

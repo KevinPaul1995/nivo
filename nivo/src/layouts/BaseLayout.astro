@@ -1,19 +1,66 @@
 ---
 import "../styles/global.css";
+import { site } from "../data/siteContent";
 
-const { title = "NIVO" } = Astro.props;
+const {
+  title = "NIVO | Limpieza profesional en Ibarra, Atuntaqui, Cotacachi y Otavalo",
+  description = site.description,
+  canonical = site.url,
+} = Astro.props;
+
+const structuredData = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "CleaningService",
+  name: site.legalName,
+  url: site.url,
+  description: site.description,
+  telephone: site.contact.phoneInternational,
+  email: site.contact.email,
+  priceRange: "$$",
+  areaServed: site.serviceAreas.map((area) => ({
+    "@type": "City",
+    name: area,
+    containedInPlace: {
+      "@type": "AdministrativeArea",
+      name: "Imbabura",
+    },
+  })),
+  serviceType: [
+    "Limpieza de casas",
+    "Limpieza de oficinas",
+    "Limpieza de empresas",
+    "Limpieza con materiales incluidos",
+    "Limpieza sin materiales incluidos",
+  ],
+});
 ---
 
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
     <meta
-      name="description"
-      content="NIVO ofrece servicios de limpieza profesional para hogares, oficinas y espacios comerciales."
+      name="keywords"
+      content="limpieza en Ibarra, limpieza en Atuntaqui, limpieza en Cotacachi, limpieza en Otavalo, limpieza de casas, limpieza de oficinas, limpieza de empresas"
     />
+    <meta name="theme-color" content="#f8f7f1" />
+    <meta name="geo.region" content="EC-I" />
+    <meta name="geo.placename" content="Ibarra, Imbabura, Ecuador" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="es_EC" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
 
+    <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <script type="application/ld+json" set:html={structuredData} />
     <title>{title}</title>
   </head>
 

@@ -1,0 +1,28 @@
+---
+import { site } from "../../data/siteContent";
+---
+
+<footer class="site-footer">
+  <div class="site-footer__brand">
+    <strong>{site.name}</strong>
+    <p>{site.description}</p>
+  </div>
+
+  <div class="site-footer__group">
+    <span>Contacto</span>
+    <a href={site.contact.phoneHref}>{site.contact.phoneLabel}</a>
+    <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+  </div>
+
+  <div class="site-footer__group">
+    <span>Cobertura</span>
+    <p>{site.serviceAreas.join(" · ")}</p>
+  </div>
+
+  <p class="site-footer__credit">
+    Desarrollado por{" "}
+    <a href="https://www.nommada.com" target="_blank" rel="noreferrer">
+      Nommada Ingeniería · www.nommada.com
+    </a>
+  </p>
+</footer>

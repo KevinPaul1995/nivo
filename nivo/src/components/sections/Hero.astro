@@ -1,0 +1,43 @@
+---
+import ParticleHero from "../ParticleHero.jsx";
+import { heroProof } from "../../data/siteContent";
+---
+
+<section class="hero" id="inicio" aria-labelledby="hero-title">
+  <ParticleHero client:load />
+
+  <div class="hero__intro-copy">
+    <span>NIVO</span>
+    <strong>Limpieza profesional</strong>
+  </div>
+
+  <div class="hero__section-copy hero__about-copy">
+    <span>Ibarra · Atuntaqui · Cotacachi · Otavalo</span>
+    <strong>Calidad visible. Coordinación simple.</strong>
+    <p>
+      Casas, oficinas y empresas atendidas con alcance claro, horario acordado
+      y opción de trabajar con o sin materiales incluidos.
+    </p>
+
+    <ul class="hero__proof-list" aria-label="Diferenciales de NIVO">
+      {
+        heroProof.map((item) => (
+          <li>
+            <strong>{item.value}</strong>
+            <span>{item.label}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="hero__section-copy hero__services-copy">
+    <span>Precisión visible</span>
+    <strong>Orden que se siente desde la puerta.</strong>
+    <p>Baños, cocinas y superficies de alto contacto con revisión final antes de terminar.</p>
+  </div>
+
+  <h1 id="hero-title" class="sr-only">
+    NIVO limpieza profesional de casas, oficinas y empresas en Ibarra, Atuntaqui, Cotacachi y Otavalo
+  </h1>
+</section>

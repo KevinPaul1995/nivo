@@ -1,0 +1,25 @@
+---
+import { site } from "../../data/siteContent";
+---
+
+<section class="content-section contact-section" id="contacto" aria-labelledby="contact-title">
+  <div class="contact-card">
+    <div>
+      <span class="section-eyebrow">Contacto</span>
+      <h2 id="contact-title">Cotiza tu limpieza en minutos.</h2>
+      <p>
+        Escríbenos por WhatsApp con tu ciudad, tipo de espacio y frecuencia.
+        Si tienes fotos, ayudan a definir mejor el alcance.
+      </p>
+    </div>
+
+    <div class="contact-actions">
+      <a class="button button--light" href={site.contact.whatsappHref} target="_blank" rel="noreferrer">
+        {site.contact.whatsappLabel}
+      </a>
+      <a class="button button--ghost" href={`mailto:${site.contact.email}`}>
+        {site.contact.email}
+      </a>
+    </div>
+  </div>
+</section>

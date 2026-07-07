@@ -1,8 +1,24 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteFooter from "../components/layout/SiteFooter.astro";
+import ContactSection from "../components/sections/ContactSection.astro";
+import FaqSection from "../components/sections/FaqSection.astro";
 import Hero from "../components/Hero.astro";
+import ProofSection from "../components/sections/ProofSection.astro";
+import ServicesSection from "../components/sections/ServicesSection.astro";
 ---
 
-<BaseLayout title="NIVO | Limpieza profesional">
-  <Hero />
+<BaseLayout
+  title="NIVO Limpieza | Casas, oficinas y empresas en Ibarra y Otavalo"
+  description="Servicio de limpieza profesional para casas, oficinas y empresas en Ibarra, Atuntaqui, Cotacachi y Otavalo. Cotiza con o sin materiales incluidos."
+>
+  <main id="contenido">
+    <Hero />
+    <ProofSection />
+    <ServicesSection />
+    <FaqSection />
+    <ContactSection />
+  </main>
+
+  <SiteFooter />
 </BaseLayout>

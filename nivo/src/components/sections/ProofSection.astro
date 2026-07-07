@@ -1,0 +1,35 @@
+---
+import { coverageItems, serviceNotes } from "../../data/siteContent";
+---
+
+<section class="content-section coverage-section" id="calidad" aria-labelledby="coverage-title">
+  <div class="section-grid section-grid--split coverage-layout">
+    <div class="section-copy">
+      <span class="section-eyebrow">Cobertura local</span>
+      <h2 id="coverage-title">Limpieza profesional en Imbabura.</h2>
+      <p>
+        Atendemos hogares, oficinas y empresas en Ibarra, Atuntaqui, Cotacachi
+        y Otavalo con comunicación directa y alcance definido desde el inicio.
+      </p>
+    </div>
+
+    <div class="coverage-panel" aria-label="Zonas de cobertura NIVO">
+      {
+        coverageItems.map((item) => (
+          <article>
+            <h3>{item.city}</h3>
+            <p>{item.text}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="standards-strip" aria-label="Diferenciales del servicio NIVO">
+    {
+      serviceNotes.map((item) => (
+        <span>{item}</span>
+      ))
+    }
+  </div>
+</section>
