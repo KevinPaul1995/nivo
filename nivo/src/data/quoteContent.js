@@ -144,7 +144,7 @@ export const frequencyOptions = [
   {
     value: 'quincenal',
     label: 'Quincenal',
-    detail: 'Mantenimiento equilibrado.',
+    detail: 'Rutina equilibrada.',
     multiplier: 0.94,
   },
   {
@@ -593,7 +593,7 @@ export const extraOptions = [
     price: 2.5,
     services: ['casa', 'departamento'],
     minutes: 20,
-    pricingNote: 'No incluye aspirado ni lavado profundo; solo limpieza superficial posible con herramientas actuales.',
+    pricingNote: 'No incluye lavado profundo; solo limpieza superficial posible con herramientas actuales.',
   },
   {
     id: 'smallCarpets',
@@ -602,7 +602,7 @@ export const extraOptions = [
     price: 2,
     services: ['casa', 'departamento', 'oficina', 'local'],
     minutes: 18,
-    pricingNote: 'No incluye aspirado; se limita a alfombras pequeñas que se puedan mover o tratar superficialmente.',
+    pricingNote: 'Se limita a alfombras pequeñas que se puedan mover o tratar superficialmente.',
   },
   {
     id: 'ovenMicrowave',
@@ -620,7 +620,7 @@ export const extraOptions = [
     price: 4.5,
     services: ['casa', 'departamento', 'mudanza'],
     minutes: 40,
-    pricingNote: 'Incluye coordinación para mover alimentos u objetos; no depende de que esté vacía.',
+    pricingNote: 'Incluye coordinación para mover alimentos u objetos antes de limpiar.',
   },
   {
     id: 'heavyGrease',
@@ -739,10 +739,6 @@ export function getFrequencyOption(value) {
 
 export function getMaterialOption(value) {
   return materialOptions.find((option) => option.value === value) ?? materialOptions[1];
-}
-
-export function getPetOption(value) {
-  return petOptions.find((option) => option.value === value) ?? petOptions[0];
 }
 
 export function getUrgencyOption(value) {

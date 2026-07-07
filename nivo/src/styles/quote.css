@@ -467,6 +467,7 @@
 }
 
 .quote-field input,
+.quote-field select,
 .quote-field textarea {
   width: 100%;
   border: 1px solid rgba(7, 18, 15, 0.13);
@@ -479,15 +480,37 @@
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
+.quote-field select {
+  appearance: none;
+  cursor: pointer;
+}
+
 .quote-field textarea {
   min-height: 128px;
   resize: vertical;
 }
 
 .quote-field input:focus,
+.quote-field select:focus,
 .quote-field textarea:focus {
   border-color: rgba(7, 18, 15, 0.42);
   box-shadow: 0 0 0 4px rgba(200, 255, 34, 0.24);
+}
+
+.quote-field--compact {
+  gap: 8px;
+}
+
+.quote-field--compact input,
+.quote-field--compact select {
+  padding: 12px 14px;
+}
+
+.quote-extra__detail {
+  display: grid;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(7, 18, 15, 0.09);
 }
 
 .quote-navigation {

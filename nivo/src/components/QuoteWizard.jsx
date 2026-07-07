@@ -302,10 +302,10 @@ function calculateQuote(answers) {
   const condition = getConditionOption(answers.condition);
   const frequency = getFrequencyOption(answers.frequency);
   const materials = getMaterialOption(answers.materials);
-  const pets = getPetOption(answers.pets);
   const urgency = getUrgencyOption(answers.urgency);
   const city = getCityOption(answers.city);
   const counters = getVisibleCounters(answers.serviceType);
+  const visibleExtraIds = new Set(getVisibleExtras(answers.serviceType).map((extra) => extra.id));
 
   const areaItems = counters
     .map((counter) => {
@@ -328,7 +328,7 @@ function calculateQuote(answers) {
       const extra = getExtraOption(extraId);
       const numericQuantity = Number(quantity || 0);
 
-      if (!extra || numericQuantity <= 0) {
+      if (!extra || !visibleExtraIds.has(extraId) || numericQuantity <= 0) {
         return null;
       }
 
@@ -339,47 +339,46 @@ function calculateQuote(answers) {
       return {
         id: extraId,
         label: extra.label,
+        summaryLabel: metrics.detailLabel ? `${extra.label} (${metrics.detailLabel})` : extra.label,
         quantity: metrics.quantity,
         price: metrics.price,
         minutes: metrics.minutes,
+        appliesMultipliers: metrics.appliesMultipliers,
       };
     })
     .filter(Boolean);
 
-  const extraTotal = extraItems.reduce((total, item) => total + item.price, 0);
-  const laborSubtotal = serviceType.basePrice + areaTotal + extraTotal;
-  const fixedCharges = materials.price + city.travelFee;
-  const effortMultiplier = serviceType.multiplier * size.multiplier * condition.multiplier * pets.multiplier;
+  const petItems = getPetItems(answers);
+  const petTotal = petItems.reduce((total, item) => total + item.price, 0);
+  const petMinutes = petItems.reduce((total, item) => total + item.minutes, 0);
+  const variableExtraTotal = extraItems
+    .filter((item) => item.appliesMultipliers)
+    .reduce((total, item) => total + item.price, 0);
+  const fixedExtraTotal = extraItems
+    .filter((item) => !item.appliesMultipliers)
+    .reduce((total, item) => total + item.price, 0);
+  const extraTotal = variableExtraTotal + fixedExtraTotal;
+  const laborSubtotal = serviceType.basePrice + areaTotal + variableExtraTotal + petTotal;
+  const fixedCharges = fixedExtraTotal + materials.price + city.travelFee;
+  const effortMultiplier = serviceType.multiplier * size.multiplier * condition.multiplier;
   const priceMultiplier = frequency.multiplier * urgency.multiplier;
   const baseSubtotal = laborSubtotal + fixedCharges;
 
-  const minutes = [...areaItems, ...extraItems].reduce((total, item) => total + item.minutes, 0);
+  const minutes = [...areaItems, ...extraItems].reduce((total, item) => total + item.minutes, petMinutes);
   const measuredMinutes = Math.max(90, Math.round(minutes * effortMultiplier));
-  const pricedMinutesFloor = Math.max(
-    90,
-    Math.round(((laborSubtotal * effortMultiplier) / quoteConfig.hourlyReference) * 60),
-  );
-  const adjustedMinutes = Math.max(measuredMinutes, pricedMinutesFloor);
-
-  const laborHours = adjustedMinutes / 60;
-  const laborLow = laborHours * quoteConfig.hourlyRateMin * priceMultiplier;
-  const laborHigh = laborHours * quoteConfig.hourlyRateMax * priceMultiplier;
-
-  const low = Math.max(
+  const adjustedMinutes = measuredMinutes;
+  const estimated = Math.max(
     quoteConfig.minPrice,
-    roundTo(laborLow + fixedCharges),
+    roundTo((laborSubtotal * effortMultiplier * priceMultiplier) + fixedCharges),
   );
-  const high = Math.max(
-    low + quoteConfig.rounding,
-    roundTo(laborHigh + fixedCharges),
-  );
-  const estimated = roundTo((low + high) / 2);
+  const low = estimated;
+  const high = estimated;
 
   let suggestedPeople = quoteConfig.defaultTeamSize;
   if (adjustedMinutes >= 480) suggestedPeople = 3;
   if (adjustedMinutes >= 840) suggestedPeople = 4;
 
-  const totalHours = Math.max(2, Math.ceil(laborHours * 2) / 2);
+  const totalHours = Math.max(2, Math.ceil((adjustedMinutes / 60) * 2) / 2);
   const visitHours = Math.max(1.5, Math.ceil((totalHours / suggestedPeople) * 2) / 2);
 
   return {
@@ -391,7 +390,8 @@ function calculateQuote(answers) {
     condition,
     frequency,
     materials,
-    pets,
+    petItems,
+    petSummary: getPetSummary(petItems),
     urgency,
     city,
     areaItems,
@@ -400,6 +400,8 @@ function calculateQuote(answers) {
     extraTotal,
     baseSubtotal,
     laborSubtotal,
+    variableExtraTotal,
+    fixedExtraTotal,
     fixedCharges,
     effortMultiplier,
     priceMultiplier,
@@ -415,7 +417,7 @@ function buildWhatsappHref(answers, quote) {
     : 'Sin ambientes seleccionados';
 
   const extraSummary = quote.extraItems.length
-    ? quote.extraItems.map((item) => `${item.label}: ${item.quantity}`).join('\n')
+    ? quote.extraItems.map((item) => `${item.summaryLabel ?? item.label}: ${item.quantity}`).join('\n')
     : 'Sin extras';
 
   const message = [
@@ -426,7 +428,7 @@ function buildWhatsappHref(answers, quote) {
     `Estado: ${quote.condition.label}`,
     `Frecuencia: ${quote.frequency.label}`,
     `Materiales: ${quote.materials.label}`,
-    `Mascotas: ${quote.pets.label}`,
+    `Mascotas: ${quote.petSummary}`,
     `Urgencia: ${quote.urgency.label}`,
     '',
     'Ambientes:',
@@ -438,11 +440,11 @@ function buildWhatsappHref(answers, quote) {
     `Ciudad: ${quote.city.label}`,
     `Sector / referencia: ${answers.sector || 'Por confirmar'}`,
     `Valor calculado: ${formatMoney(quote.estimated)}`,
-    `Tiempo referencial: ${quote.suggestedPeople} persona(s), aprox. ${quote.visitHours} h por visita`,
+    `Tiempo estimado: ${quote.suggestedPeople} persona(s), aprox. ${quote.visitHours} h por visita`,
     '',
     answers.notes ? `Observaciones: ${answers.notes}` : 'Observaciones: Por confirmar con fotos.',
     '',
-    'Quisiera confirmar disponibilidad, alcance exacto y precio final.',
+    'Quisiera coordinar la visita con este valor calculado.',
   ].join('\n');
 
   return `${quoteConfig.whatsappBase}?text=${encodeURIComponent(message)}`;
@@ -455,7 +457,7 @@ function ChoiceCard({ checked, detail, label, name, onChange, value }) {
       <span className="quote-choice__mark" aria-hidden="true" />
       <span>
         <strong>{label}</strong>
-        <small>{detail}</small>
+        {detail ? <small>{detail}</small> : null}
       </span>
     </label>
   );
@@ -528,7 +530,13 @@ export default function QuoteWizard() {
   }
 
   function updateCount(counterId, value) {
-    const counter = [...residentialCounters, ...businessCounters].find((item) => item.id === counterId);
+    const counter = [
+      ...residentialCounters,
+      ...moveOutCounters,
+      ...postConstructionCounters,
+      ...businessCounters,
+      ...petCounters,
+    ].find((item) => item.id === counterId);
     const nextValue = clampNumber(value, 0, counter?.max ?? 99);
 
     setAnswers((current) => ({
@@ -639,17 +647,30 @@ export default function QuoteWizard() {
     }
 
     if (activeStep === 3) {
+      const showPets = shouldShowPets(answers.serviceType);
+
       return (
         <div className="quote-stacked-groups">
           <section>
             <h2>Materiales</h2>
-            {renderChoiceGrid('materials', materialOptions, 'four')}
+            {renderChoiceGrid('materials', materialOptions, 'three')}
           </section>
 
-          <section>
-            <h2>Mascotas</h2>
-            {renderChoiceGrid('pets', petOptions)}
-          </section>
+          {showPets ? (
+            <section>
+              <h2>Mascotas</h2>
+              <div className="quote-counter-grid">
+                {petCounters.map((counter) => (
+                  <CounterCard
+                    counter={counter}
+                    key={counter.id}
+                    onChange={updateCount}
+                    value={answers.counts[counter.id]}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section>
             <h2>Urgencia</h2>
@@ -660,9 +681,11 @@ export default function QuoteWizard() {
     }
 
     if (activeStep === 4) {
+      const visibleExtras = getVisibleExtras(answers.serviceType);
+
       return (
         <div className="quote-extra-grid">
-          {extraOptions.map((extra) => {
+          {visibleExtras.map((extra) => {
             const selected = Object.prototype.hasOwnProperty.call(answers.extras, extra.id);
             const quantity = answers.extras[extra.id] ?? 1;
             const maxQuantity = getExtraMaxQuantity(extra.id, answers);
@@ -673,7 +696,7 @@ export default function QuoteWizard() {
                   <input checked={selected} onChange={() => toggleExtra(extra.id)} type="checkbox" />
                   <span>
                     <strong>{extra.label}</strong>
-                    <small>{extra.detail}</small>
+                    {extra.detail ? <small>{extra.detail}</small> : null}
                   </span>
                 </label>
 
@@ -704,6 +727,36 @@ export default function QuoteWizard() {
                         +
                       </button>
                     </div>
+                  </div>
+                ) : null}
+
+                {selected && extra.requiresDetail === 'delicateSurface' ? (
+                  <div className="quote-extra__detail">
+                    <label className="quote-field quote-field--compact">
+                      <span>Tipo de superficie</span>
+                      <select
+                        onChange={(event) => updateField('delicateSurface', event.target.value)}
+                        value={answers.delicateSurface}
+                      >
+                        {delicateSurfaceOptions.map((surface) => (
+                          <option key={surface.value} value={surface.value}>
+                            {surface.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    {answers.delicateSurface === 'otros' ? (
+                      <label className="quote-field quote-field--compact">
+                        <span>Indica el material</span>
+                        <input
+                          onChange={(event) => updateField('delicateSurfaceOther', event.target.value)}
+                          placeholder="Ej. porcelanato, granito, cuero, pieza decorativa..."
+                          type="text"
+                          value={answers.delicateSurfaceOther}
+                        />
+                      </label>
+                    ) : null}
                   </div>
                 ) : null}
               </article>
@@ -779,7 +832,7 @@ export default function QuoteWizard() {
               <span key={item.id}>{item.label}: {item.quantity}</span>
             ))}
             {quote.extraItems.map((item) => (
-              <span key={item.id}>{item.label}: {item.quantity}</span>
+              <span key={item.id}>{item.summaryLabel ?? item.label}: {item.quantity}</span>
             ))}
           </div>
         </div>
