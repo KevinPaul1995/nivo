@@ -3,6 +3,7 @@
   background:
     radial-gradient(circle at 90% 10%, rgba(200, 255, 34, 0.22), transparent 32rem),
     #f8f7f1;
+  scroll-margin-top: 0;
 }
 
 .quote-landing {

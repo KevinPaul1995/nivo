@@ -4,19 +4,22 @@ import {
   businessServiceTypes,
   cityOptions,
   conditionOptions,
+  delicateSurfaceOptions,
   extraOptions,
   frequencyOptions,
   getCityOption,
   getConditionOption,
+  getDelicateSurfaceOption,
   getExtraOption,
   getFrequencyOption,
   getMaterialOption,
-  getPetOption,
   getServiceType,
   getSizeOption,
   getUrgencyOption,
   materialOptions,
-  petOptions,
+  moveOutCounters,
+  petCounters,
+  postConstructionCounters,
   quoteConfig,
   residentialCounters,
   serviceTypes,
@@ -42,37 +45,43 @@ const quoteFlow = [
   {
     eyebrow: 'Paso 2 de 7',
     title: 'Ambientes principales',
-    description: 'Cada habitación, baño, cocina o zona de trabajo suma tiempo real de limpieza.',
+    description: 'Selecciona las áreas que realmente se van a limpiar en esta visita.',
   },
   {
     eyebrow: 'Paso 3 de 7',
     title: 'Tamaño, estado y frecuencia',
-    description: 'El mismo espacio puede cambiar mucho de precio según acumulación, rutina y alcance.',
+    description: 'La última limpieza y la rutina ayudan a estimar el esfuerzo correcto.',
   },
   {
     eyebrow: 'Paso 4 de 7',
     title: 'Materiales, mascotas y urgencia',
-    description: 'Mascotas, productos incluidos y agenda urgente ajustan el valor de referencia.',
+    description: 'Indica materiales, perros, gatos y disponibilidad de agenda.',
   },
   {
     eyebrow: 'Paso 5 de 7',
     title: 'Servicios adicionales',
-    description: 'Agrega vidrios, camas, muebles, electrodomésticos, grasa marcada o detalles especiales.',
+    description: 'Agrega solo los detalles que necesitas incluir en la visita.',
   },
   {
     eyebrow: 'Paso 6 de 7',
     title: 'Ubicación y observaciones',
-    description: 'La ciudad, el sector y los detalles previos ayudan a confirmar disponibilidad y precio final.',
+    description: 'La ciudad y el sector ayudan a calcular movilización y coordinar llegada.',
   },
   {
     eyebrow: 'Resultado',
-    title: 'Estimado inicial de limpieza',
-    description: 'Este rango sirve para orientar la conversación. El precio final se confirma con fotos y alcance exacto.',
+    title: 'Valor calculado de limpieza',
+    description: 'Este valor se calcula con los ambientes, extras, tiempo operativo y condiciones que seleccionaste.',
   },
 ];
 
 function buildInitialCounts() {
-  const counters = [...residentialCounters, ...businessCounters];
+  const counters = [
+    ...residentialCounters,
+    ...moveOutCounters,
+    ...postConstructionCounters,
+    ...businessCounters,
+    ...petCounters,
+  ];
 
   return counters.reduce((accumulator, counter) => {
     accumulator[counter.id] = counter.defaultValue ?? 0;
@@ -87,9 +96,10 @@ function getInitialAnswers() {
     condition: conditionOptions[1].value,
     frequency: frequencyOptions[0].value,
     materials: materialOptions[1].value,
-    pets: petOptions[0].value,
     urgency: urgencyOptions[0].value,
     city: cityOptions[0].value,
+    delicateSurface: delicateSurfaceOptions[0].value,
+    delicateSurfaceOther: '',
     sector: '',
     notes: '',
     counts: buildInitialCounts(),
@@ -101,8 +111,32 @@ function isBusinessService(serviceType) {
   return businessServiceTypes.includes(serviceType);
 }
 
+function isMoveOutService(serviceType) {
+  return serviceType === 'mudanza';
+}
+
+function isPostConstructionService(serviceType) {
+  return serviceType === 'postobra';
+}
+
+function shouldShowPets(serviceType) {
+  return serviceType === 'casa' || serviceType === 'departamento';
+}
+
 function getVisibleCounters(serviceType) {
+  if (isMoveOutService(serviceType)) {
+    return moveOutCounters;
+  }
+
+  if (isPostConstructionService(serviceType)) {
+    return postConstructionCounters;
+  }
+
   return isBusinessService(serviceType) ? businessCounters : residentialCounters;
+}
+
+function getVisibleExtras(serviceType) {
+  return extraOptions.filter((extra) => !extra.services || extra.services.includes(serviceType));
 }
 
 function formatMoney(value) {
@@ -124,6 +158,12 @@ function clampNumber(value, min, max) {
 }
 
 function getExtraMaxQuantity(extraId, answers) {
+  const extra = getExtraOption(extraId);
+
+  if (extra?.pricingMode === 'roomBased') {
+    return 1;
+  }
+
   if (singleQuantityExtras.has(extraId)) {
     return 1;
   }
@@ -167,6 +207,95 @@ function getExtraUnitLabel(extraId) {
   return labels[extraId] ?? 'unidades';
 }
 
+function getRoomBasedUnits(extra, context) {
+  if (extra.roomSource === 'bedroomKitchen') {
+    if (isPostConstructionService(context.answers.serviceType)) {
+      return Math.max(1, Number(context.answers.counts.postWindows || 0));
+    }
+
+    if (isMoveOutService(context.answers.serviceType)) {
+      return Math.max(
+        1,
+        Number(context.answers.counts.emptyBedrooms || 0) + Number(context.answers.counts.emptyKitchens || 0),
+      );
+    }
+
+    if (isBusinessService(context.answers.serviceType)) {
+      return Math.max(
+        1,
+        Number(context.answers.counts.meetingRooms || 0) +
+          Number(context.answers.counts.receptions || 0) +
+          Number(context.answers.counts.kitchenettes || 0),
+      );
+    }
+
+    return Math.max(
+      1,
+      Number(context.answers.counts.bedrooms || 0) + Number(context.answers.counts.kitchens || 0),
+    );
+  }
+
+  return 1;
+}
+
+function calculateExtraMetrics(extra, quantity, context) {
+  if (extra.pricingMode === 'roomBased') {
+    const billableUnits = getRoomBasedUnits(extra, context);
+
+    return {
+      quantity: billableUnits,
+      price: roundTo(billableUnits * extra.roomRate, 1),
+      minutes: extra.minutes * billableUnits,
+      appliesMultipliers: extra.appliesMultipliers !== false,
+    };
+  }
+
+  const surface = extra.requiresDetail === 'delicateSurface'
+    ? getDelicateSurfaceOption(context.answers.delicateSurface)
+    : null;
+  const surfaceMultiplier = surface?.multiplier ?? 1;
+
+  return {
+    quantity,
+    price: roundTo(extra.price * quantity * surfaceMultiplier, 0.5),
+    minutes: Math.round(extra.minutes * quantity * surfaceMultiplier),
+    appliesMultipliers: extra.appliesMultipliers !== false,
+    detailLabel: surface
+      ? surface.value === 'otros' && context.answers.delicateSurfaceOther
+        ? `${surface.label}: ${context.answers.delicateSurfaceOther}`
+        : surface.label
+      : null,
+  };
+}
+
+function getPetItems(answers) {
+  if (!shouldShowPets(answers.serviceType)) {
+    return [];
+  }
+
+  return petCounters
+    .map((counter) => {
+      const quantity = Number(answers.counts[counter.id] || 0);
+
+      return {
+        id: counter.id,
+        label: counter.label,
+        quantity,
+        price: counter.price * quantity,
+        minutes: counter.minutes * quantity,
+      };
+    })
+    .filter((item) => item.quantity > 0);
+}
+
+function getPetSummary(petItems) {
+  if (!petItems.length) {
+    return 'Sin mascotas';
+  }
+
+  return petItems.map((item) => `${item.label}: ${item.quantity}`).join(', ');
+}
+
 function calculateQuote(answers) {
   const serviceType = getServiceType(answers.serviceType);
   const size = getSizeOption(answers.size);
@@ -192,6 +321,8 @@ function calculateQuote(answers) {
     })
     .filter((item) => item.quantity > 0);
 
+  const areaTotal = areaItems.reduce((total, item) => total + item.price, 0);
+
   const extraItems = Object.entries(answers.extras)
     .map(([extraId, quantity]) => {
       const extra = getExtraOption(extraId);
@@ -201,37 +332,54 @@ function calculateQuote(answers) {
         return null;
       }
 
+      const metrics = calculateExtraMetrics(extra, numericQuantity, {
+        answers,
+      });
+
       return {
         id: extraId,
         label: extra.label,
-        quantity: numericQuantity,
-        price: extra.price * numericQuantity,
-        minutes: extra.minutes * numericQuantity,
+        quantity: metrics.quantity,
+        price: metrics.price,
+        minutes: metrics.minutes,
       };
     })
     .filter(Boolean);
 
-  const areaTotal = areaItems.reduce((total, item) => total + item.price, 0);
   const extraTotal = extraItems.reduce((total, item) => total + item.price, 0);
-  const baseSubtotal = serviceType.basePrice + areaTotal + extraTotal + materials.price + city.travelFee;
-
-  const multiplier = serviceType.multiplier * size.multiplier * condition.multiplier * pets.multiplier * urgency.multiplier;
-  const beforeFrequency = baseSubtotal * multiplier;
-  const estimated = Math.max(quoteConfig.minPrice, roundTo(beforeFrequency * frequency.multiplier));
-
-  let highFactor = 1.16;
-  if (answers.condition === 'profunda') highFactor += 0.08;
-  if (answers.condition === 'intensiva') highFactor += 0.16;
-  if (answers.serviceType === 'postobra') highFactor += 0.12;
-  if (answers.pets !== 'ninguna') highFactor += 0.05;
-
-  const low = Math.max(quoteConfig.minPrice, roundTo(estimated * 0.9));
-  const high = Math.max(low + quoteConfig.rounding, roundTo(estimated * highFactor));
+  const laborSubtotal = serviceType.basePrice + areaTotal + extraTotal;
+  const fixedCharges = materials.price + city.travelFee;
+  const effortMultiplier = serviceType.multiplier * size.multiplier * condition.multiplier * pets.multiplier;
+  const priceMultiplier = frequency.multiplier * urgency.multiplier;
+  const baseSubtotal = laborSubtotal + fixedCharges;
 
   const minutes = [...areaItems, ...extraItems].reduce((total, item) => total + item.minutes, 0);
-  const adjustedMinutes = Math.max(90, Math.round(minutes * size.multiplier * condition.multiplier * pets.multiplier));
-  const suggestedPeople = adjustedMinutes >= 520 ? 3 : quoteConfig.defaultTeamSize;
-  const totalHours = Math.max(2, Math.ceil((adjustedMinutes / 60) * 2) / 2);
+  const measuredMinutes = Math.max(90, Math.round(minutes * effortMultiplier));
+  const pricedMinutesFloor = Math.max(
+    90,
+    Math.round(((laborSubtotal * effortMultiplier) / quoteConfig.hourlyReference) * 60),
+  );
+  const adjustedMinutes = Math.max(measuredMinutes, pricedMinutesFloor);
+
+  const laborHours = adjustedMinutes / 60;
+  const laborLow = laborHours * quoteConfig.hourlyRateMin * priceMultiplier;
+  const laborHigh = laborHours * quoteConfig.hourlyRateMax * priceMultiplier;
+
+  const low = Math.max(
+    quoteConfig.minPrice,
+    roundTo(laborLow + fixedCharges),
+  );
+  const high = Math.max(
+    low + quoteConfig.rounding,
+    roundTo(laborHigh + fixedCharges),
+  );
+  const estimated = roundTo((low + high) / 2);
+
+  let suggestedPeople = quoteConfig.defaultTeamSize;
+  if (adjustedMinutes >= 480) suggestedPeople = 3;
+  if (adjustedMinutes >= 840) suggestedPeople = 4;
+
+  const totalHours = Math.max(2, Math.ceil(laborHours * 2) / 2);
   const visitHours = Math.max(1.5, Math.ceil((totalHours / suggestedPeople) * 2) / 2);
 
   return {
@@ -251,7 +399,10 @@ function calculateQuote(answers) {
     areaTotal,
     extraTotal,
     baseSubtotal,
-    multiplier,
+    laborSubtotal,
+    fixedCharges,
+    effortMultiplier,
+    priceMultiplier,
     suggestedPeople,
     totalHours,
     visitHours,
@@ -286,7 +437,7 @@ function buildWhatsappHref(answers, quote) {
     '',
     `Ciudad: ${quote.city.label}`,
     `Sector / referencia: ${answers.sector || 'Por confirmar'}`,
-    `Rango estimado: ${formatMoney(quote.low)} - ${formatMoney(quote.high)}`,
+    `Valor calculado: ${formatMoney(quote.estimated)}`,
     `Tiempo referencial: ${quote.suggestedPeople} persona(s), aprox. ${quote.visitHours} h por visita`,
     '',
     answers.notes ? `Observaciones: ${answers.notes}` : 'Observaciones: Por confirmar con fotos.',
@@ -595,10 +746,8 @@ export default function QuoteWizard() {
     return (
       <div className="quote-final">
         <div className="quote-final__price">
-          <span>Rango referencial</span>
-          <strong>
-            {formatMoney(quote.low)} - {formatMoney(quote.high)}
-          </strong>
+          <span>Valor calculado</span>
+          <strong>{formatMoney(quote.estimated)}</strong>
           <p>
             La visita se estima con {quote.suggestedPeople} persona(s), aproximadamente {quote.visitHours} h por visita.
           </p>
@@ -671,11 +820,9 @@ export default function QuoteWizard() {
         </div>
 
         <aside className="quote-live-summary" aria-live="polite">
-          <span className="quote-live-summary__label">Estimado en vivo</span>
-          <strong>{formatMoney(quote.low)} - {formatMoney(quote.high)}</strong>
-          <p>
-            Referencia inicial. El precio final depende de fotos, acceso, estado real y alcance exacto.
-          </p>
+          <span className="quote-live-summary__label">Valor en vivo</span>
+          <strong>{formatMoney(quote.estimated)}</strong>
+          <p>Se actualiza segun ambientes, extras, tiempo estimado, materiales y ciudad.</p>
 
           <div className="quote-live-summary__chips">
             <span>{quote.serviceType.shortLabel}</span>
