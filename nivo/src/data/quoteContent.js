@@ -20,6 +20,12 @@ export const quoteConfig = {
   // Si luego trabajas con cuadrilla, puedes cambiar a 2.
   defaultTeamSize: 1,
 
+  // Evita planificar jornadas demasiado largas para una sola persona.
+  maxHoursPerPerson: 5,
+
+  // Margen operativo para llegada, preparación, revisión y cierre.
+  timeSafetyBufferMinutes: 45,
+
   businessName: 'NIVO',
 };
 

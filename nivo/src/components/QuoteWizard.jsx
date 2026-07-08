@@ -374,11 +374,10 @@ function calculateQuote(answers) {
   const low = estimated;
   const high = estimated;
 
-  let suggestedPeople = quoteConfig.defaultTeamSize;
-  if (adjustedMinutes >= 480) suggestedPeople = 3;
-  if (adjustedMinutes >= 840) suggestedPeople = 4;
-
-  const totalHours = Math.max(2, Math.ceil((adjustedMinutes / 60) * 2) / 2);
+  const displayMinutes = adjustedMinutes + quoteConfig.timeSafetyBufferMinutes;
+  const totalHours = Math.max(2, Math.ceil((displayMinutes / 60) * 2) / 2);
+  const peopleByDuration = Math.ceil(totalHours / quoteConfig.maxHoursPerPerson);
+  const suggestedPeople = Math.max(quoteConfig.defaultTeamSize, peopleByDuration);
   const visitHours = Math.max(1.5, Math.ceil((totalHours / suggestedPeople) * 2) / 2);
 
   return {
@@ -405,6 +404,7 @@ function calculateQuote(answers) {
     fixedCharges,
     effortMultiplier,
     priceMultiplier,
+    displayMinutes,
     suggestedPeople,
     totalHours,
     visitHours,
