@@ -138,26 +138,25 @@ export const frequencyOptions = [
   {
     value: 'puntual',
     label: 'Una sola vez',
-    detail: 'Servicio puntual o primera visita.',
+    detail: 'Una visita única con el estado que selecciones.',
     multiplier: 1,
-  },
-  {
-    value: 'semanal',
-    label: 'Semanal',
-    detail: 'Mejor precio por rutina constante.',
-    multiplier: 0.9,
+    visitCount: 1,
   },
   {
     value: 'quincenal',
     label: 'Quincenal',
-    detail: 'Rutina equilibrada.',
-    multiplier: 0.94,
+    detail: 'Dos visitas: una por semana, pagadas por adelantado.',
+    multiplier: 1,
+    visitCount: 2,
+    followUpCondition: 'general',
   },
   {
     value: 'mensual',
     label: 'Mensual',
-    detail: 'Apoyo programado cada mes.',
-    multiplier: 0.98,
+    detail: 'Cuatro visitas: una por semana, pagadas por adelantado.',
+    multiplier: 1,
+    visitCount: 4,
+    followUpCondition: 'general',
   },
 ];
 
@@ -737,10 +736,6 @@ export function getSizeOption(value) {
 
 export function getConditionOption(value) {
   return conditionOptions.find((option) => option.value === value) ?? conditionOptions[1];
-}
-
-export function getFrequencyOption(value) {
-  return frequencyOptions.find((option) => option.value === value) ?? frequencyOptions[0];
 }
 
 export function getMaterialOption(value) {

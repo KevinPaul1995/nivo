@@ -11,7 +11,6 @@ import {
   getConditionOption,
   getDelicateSurfaceOption,
   getExtraOption,
-  getFrequencyOption,
   getMaterialOption,
   getServiceType,
   getSizeOption,
@@ -137,6 +136,20 @@ function getVisibleCounters(serviceType) {
 
 function getVisibleExtras(serviceType) {
   return extraOptions.filter((extra) => !extra.services || extra.services.includes(serviceType));
+}
+
+function getVisibleFrequencies(serviceType) {
+  if (isMoveOutService(serviceType) || isPostConstructionService(serviceType)) {
+    return frequencyOptions.filter((option) => option.value === 'puntual');
+  }
+
+  return frequencyOptions;
+}
+
+function getSelectedFrequency(answers) {
+  const visibleFrequencies = getVisibleFrequencies(answers.serviceType);
+
+  return visibleFrequencies.find((option) => option.value === answers.frequency) ?? visibleFrequencies[0];
 }
 
 function formatMoney(value) {
@@ -300,7 +313,10 @@ function calculateQuote(answers) {
   const serviceType = getServiceType(answers.serviceType);
   const size = getSizeOption(answers.size);
   const condition = getConditionOption(answers.condition);
-  const frequency = getFrequencyOption(answers.frequency);
+  const frequency = getSelectedFrequency(answers);
+  const followUpCondition = getConditionOption(frequency.followUpCondition ?? condition.value);
+  const visitCount = frequency.visitCount ?? 1;
+  const followUpVisitCount = Math.max(0, visitCount - 1);
   const materials = getMaterialOption(answers.materials);
   const urgency = getUrgencyOption(answers.urgency);
   const city = getCityOption(answers.city);
@@ -360,25 +376,44 @@ function calculateQuote(answers) {
   const extraTotal = variableExtraTotal + fixedExtraTotal;
   const laborSubtotal = serviceType.basePrice + areaTotal + variableExtraTotal + petTotal;
   const fixedCharges = fixedExtraTotal + materials.price + city.travelFee;
-  const effortMultiplier = serviceType.multiplier * size.multiplier * condition.multiplier;
-  const priceMultiplier = frequency.multiplier * urgency.multiplier;
+  const firstVisitMultiplier = serviceType.multiplier * size.multiplier * condition.multiplier;
+  const followUpVisitMultiplier = serviceType.multiplier * size.multiplier * followUpCondition.multiplier;
+  const packageMultiplier = frequency.multiplier ?? 1;
+  const firstVisitPriceMultiplier = urgency.multiplier;
   const baseSubtotal = laborSubtotal + fixedCharges;
 
   const minutes = [...areaItems, ...extraItems].reduce((total, item) => total + item.minutes, petMinutes);
-  const measuredMinutes = Math.max(90, Math.round(minutes * effortMultiplier));
-  const adjustedMinutes = measuredMinutes;
+  const firstVisitMinutes = Math.max(90, Math.round(minutes * firstVisitMultiplier));
+  const followUpVisitMinutes = Math.max(90, Math.round(minutes * followUpVisitMultiplier));
+  const firstVisitValue = (laborSubtotal * firstVisitMultiplier * firstVisitPriceMultiplier) + fixedCharges;
+  const followUpVisitValue = (laborSubtotal * followUpVisitMultiplier) + fixedCharges;
   const estimated = Math.max(
-    quoteConfig.minPrice,
-    roundTo((laborSubtotal * effortMultiplier * priceMultiplier) + fixedCharges),
+    quoteConfig.minPrice * visitCount,
+    roundTo((firstVisitValue + (followUpVisitValue * followUpVisitCount)) * packageMultiplier),
   );
   const low = estimated;
   const high = estimated;
 
-  const displayMinutes = adjustedMinutes + quoteConfig.timeSafetyBufferMinutes;
-  const totalHours = Math.max(2, Math.ceil((displayMinutes / 60) * 2) / 2);
-  const peopleByDuration = Math.ceil(totalHours / quoteConfig.maxHoursPerPerson);
+  const firstVisitDisplayMinutes = firstVisitMinutes + quoteConfig.timeSafetyBufferMinutes;
+  const followUpVisitDisplayMinutes = followUpVisitMinutes + quoteConfig.timeSafetyBufferMinutes;
+  const longestVisitDisplayMinutes = Math.max(
+    firstVisitDisplayMinutes,
+    followUpVisitCount > 0 ? followUpVisitDisplayMinutes : firstVisitDisplayMinutes,
+  );
+  const longestVisitHours = Math.max(2, Math.ceil((longestVisitDisplayMinutes / 60) * 2) / 2);
+  const peopleByDuration = Math.ceil(longestVisitHours / quoteConfig.maxHoursPerPerson);
   const suggestedPeople = Math.max(quoteConfig.defaultTeamSize, peopleByDuration);
-  const visitHours = Math.max(1.5, Math.ceil((totalHours / suggestedPeople) * 2) / 2);
+  const firstVisitHours = Math.max(
+    1.5,
+    Math.ceil(((firstVisitDisplayMinutes / 60) / suggestedPeople) * 2) / 2,
+  );
+  const followUpVisitHours = Math.max(
+    1.5,
+    Math.ceil(((followUpVisitDisplayMinutes / 60) / suggestedPeople) * 2) / 2,
+  );
+  const visitHours = firstVisitHours;
+  const totalDisplayMinutes = firstVisitDisplayMinutes + (followUpVisitDisplayMinutes * followUpVisitCount);
+  const totalHours = Math.max(2, Math.ceil((totalDisplayMinutes / 60) * 2) / 2);
 
   return {
     estimated,
@@ -402,13 +437,39 @@ function calculateQuote(answers) {
     variableExtraTotal,
     fixedExtraTotal,
     fixedCharges,
-    effortMultiplier,
-    priceMultiplier,
-    displayMinutes,
+    firstVisitMultiplier,
+    followUpVisitMultiplier,
+    packageMultiplier,
+    visitCount,
+    followUpVisitCount,
+    firstVisitValue,
+    followUpVisitValue,
+    firstVisitDisplayMinutes,
+    followUpVisitDisplayMinutes,
+    totalDisplayMinutes,
     suggestedPeople,
     totalHours,
     visitHours,
+    firstVisitHours,
+    followUpVisitHours,
+    followUpCondition,
   };
+}
+
+function getFrequencySummary(quote) {
+  if (quote.visitCount <= 1) {
+    return '1 visita';
+  }
+
+  return `${quote.visitCount} visitas: primera ${quote.condition.label}, siguientes ${quote.followUpCondition.label}`;
+}
+
+function getTimeSummary(quote) {
+  if (quote.visitCount <= 1) {
+    return `${quote.suggestedPeople} persona(s), aprox. ${quote.firstVisitHours} h por visita`;
+  }
+
+  return `${quote.suggestedPeople} persona(s), primera aprox. ${quote.firstVisitHours} h; siguientes aprox. ${quote.followUpVisitHours} h`;
 }
 
 function buildWhatsappHref(answers, quote) {
@@ -425,8 +486,9 @@ function buildWhatsappHref(answers, quote) {
     '',
     `Tipo de espacio: ${quote.serviceType.label}`,
     `Tamaño: ${quote.size.label}`,
-    `Estado: ${quote.condition.label}`,
-    `Frecuencia: ${quote.frequency.label}`,
+    `Estado primera visita: ${quote.condition.label}`,
+    quote.followUpVisitCount > 0 ? `Estado visitas siguientes: ${quote.followUpCondition.label}` : null,
+    `Frecuencia: ${quote.frequency.label} (${getFrequencySummary(quote)})`,
     `Materiales: ${quote.materials.label}`,
     `Mascotas: ${quote.petSummary}`,
     `Urgencia: ${quote.urgency.label}`,
@@ -440,12 +502,12 @@ function buildWhatsappHref(answers, quote) {
     `Ciudad: ${quote.city.label}`,
     `Sector / referencia: ${answers.sector || 'Por confirmar'}`,
     `Valor calculado: ${formatMoney(quote.estimated)}`,
-    `Tiempo estimado: ${quote.suggestedPeople} persona(s), aprox. ${quote.visitHours} h por visita`,
+    `Tiempo estimado: ${getTimeSummary(quote)}`,
     '',
     answers.notes ? `Observaciones: ${answers.notes}` : 'Observaciones: Por confirmar con fotos.',
     '',
     'Quisiera coordinar la visita con este valor calculado.',
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   return `${quoteConfig.whatsappBase}?text=${encodeURIComponent(message)}`;
 }
@@ -526,6 +588,9 @@ export default function QuoteWizard() {
     setAnswers((current) => ({
       ...current,
       [field]: value,
+      ...(field === 'serviceType' && !getVisibleFrequencies(value).some((option) => option.value === current.frequency)
+        ? { frequency: frequencyOptions[0].value }
+        : {}),
     }));
   }
 
@@ -640,7 +705,7 @@ export default function QuoteWizard() {
 
           <section>
             <h2>Frecuencia</h2>
-            {renderChoiceGrid('frequency', frequencyOptions, 'four')}
+            {renderChoiceGrid('frequency', getVisibleFrequencies(answers.serviceType), 'three')}
           </section>
         </div>
       );
@@ -802,7 +867,9 @@ export default function QuoteWizard() {
           <span>Valor calculado</span>
           <strong>{formatMoney(quote.estimated)}</strong>
           <p>
-            La visita se estima con {quote.suggestedPeople} persona(s), aproximadamente {quote.visitHours} h por visita.
+            {quote.visitCount <= 1
+              ? `La visita se estima con ${getTimeSummary(quote)}.`
+              : `El paquete incluye ${getFrequencySummary(quote).toLowerCase()} y se estima con ${getTimeSummary(quote)}.`}
           </p>
         </div>
 
@@ -812,12 +879,12 @@ export default function QuoteWizard() {
             <strong>{quote.serviceType.label}</strong>
           </article>
           <article>
-            <span>Estado</span>
+            <span>Estado inicial</span>
             <strong>{quote.condition.label}</strong>
           </article>
           <article>
             <span>Frecuencia</span>
-            <strong>{quote.frequency.label}</strong>
+            <strong>{getFrequencySummary(quote)}</strong>
           </article>
           <article>
             <span>Ciudad</span>
@@ -891,7 +958,7 @@ export default function QuoteWizard() {
             </div>
             <div>
               <dt>Tiempo aprox.</dt>
-              <dd>{quote.visitHours} h / visita</dd>
+              <dd>{getTimeSummary(quote)}</dd>
             </div>
             <div>
               <dt>Extras</dt>
