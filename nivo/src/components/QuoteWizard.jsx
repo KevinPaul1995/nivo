@@ -385,11 +385,16 @@ function calculateQuote(answers) {
   const minutes = [...areaItems, ...extraItems].reduce((total, item) => total + item.minutes, petMinutes);
   const firstVisitMinutes = Math.max(90, Math.round(minutes * firstVisitMultiplier));
   const followUpVisitMinutes = Math.max(90, Math.round(minutes * followUpVisitMultiplier));
-  const firstVisitValue = (laborSubtotal * firstVisitMultiplier * firstVisitPriceMultiplier) + fixedCharges;
-  const followUpVisitValue = (laborSubtotal * followUpVisitMultiplier) + fixedCharges;
+  const firstVisitLaborValue = laborSubtotal * firstVisitMultiplier * firstVisitPriceMultiplier;
+  const followUpVisitLaborValue = laborSubtotal * followUpVisitMultiplier;
+  const packageLaborTotal = firstVisitLaborValue + (followUpVisitLaborValue * followUpVisitCount);
+  const packageFixedTotal = fixedCharges * visitCount;
+  const packageDiscount = packageLaborTotal * (1 - packageMultiplier);
+  const firstVisitValue = firstVisitLaborValue + fixedCharges;
+  const followUpVisitValue = followUpVisitLaborValue + fixedCharges;
   const estimated = Math.max(
     quoteConfig.minPrice * visitCount,
-    roundTo((firstVisitValue + (followUpVisitValue * followUpVisitCount)) * packageMultiplier),
+    roundTo((packageLaborTotal * packageMultiplier) + packageFixedTotal),
   );
   const low = estimated;
   const high = estimated;
@@ -440,6 +445,9 @@ function calculateQuote(answers) {
     firstVisitMultiplier,
     followUpVisitMultiplier,
     packageMultiplier,
+    packageLaborTotal,
+    packageFixedTotal,
+    packageDiscount,
     visitCount,
     followUpVisitCount,
     firstVisitValue,
@@ -461,7 +469,7 @@ function getFrequencySummary(quote) {
     return '1 visita';
   }
 
-  return `${quote.visitCount} visitas: primera ${quote.condition.label}, siguientes ${quote.followUpCondition.label}`;
+  return `${quote.visitCount} visitas con descuento: primera ${quote.condition.label}, siguientes ${quote.followUpCondition.label}`;
 }
 
 function getTimeSummary(quote) {
