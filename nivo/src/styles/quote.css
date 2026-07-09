@@ -81,13 +81,52 @@
 }
 
 .quote-landing-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
   gap: 18px;
+  min-height: 260px;
+  align-content: end;
   padding: clamp(24px, 3.6vw, 42px);
-  border: 1px solid rgba(7, 18, 15, 0.14);
+  border: 1px solid rgba(7, 18, 15, 0.1);
+  border-radius: 34px;
   color: #f8fbf3;
-  background: radial-gradient(circle at 18% 18%, rgba(200, 255, 34, 0.28), transparent 34%), #07120f;
-  box-shadow: 0 28px 90px rgba(7, 18, 15, 0.18);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(200, 255, 34, 0.34), transparent 28%),
+    radial-gradient(circle at 88% 12%, rgba(248, 251, 243, 0.13), transparent 30%),
+    linear-gradient(145deg, #07120f 0%, #101c18 62%, #07120f 100%);
+  box-shadow:
+    0 28px 90px rgba(7, 18, 15, 0.18),
+    inset 0 1px 0 rgba(248, 251, 243, 0.12),
+    inset 0 -28px 60px rgba(0, 0, 0, 0.22);
+}
+
+.quote-landing-card::before {
+  position: absolute;
+  top: -44px;
+  right: -28px;
+  z-index: -1;
+  width: 160px;
+  height: 160px;
+  border: 1px solid rgba(248, 251, 243, 0.12);
+  border-radius: 50%;
+  content: "";
+  background: rgba(248, 251, 243, 0.035);
+}
+
+.quote-landing-card::after {
+  position: absolute;
+  right: 28px;
+  bottom: 28px;
+  z-index: -1;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  content: "";
+  background: var(--color-lime);
+  opacity: 0.16;
+  rotate: 12deg;
 }
 
 .quote-landing-card span,
@@ -134,7 +173,11 @@
 }
 
 .quote-page {
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
+  overflow-x: clip;
   padding: clamp(28px, 5vw, 72px) var(--page-gutter) clamp(64px, 9vw, 116px);
   background:
     radial-gradient(circle at 80% 8%, rgba(200, 255, 34, 0.2), transparent 34rem),
@@ -185,6 +228,8 @@
   display: grid;
   width: min(1180px, 100%);
   max-width: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
   gap: 16px;
   margin: 0 auto;
 }
@@ -209,13 +254,21 @@
 .quote-wizard-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 0.4fr);
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
   gap: clamp(16px, 2.6vw, 30px);
   align-items: start;
 }
 
 .quote-main-panel,
 .quote-live-summary {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-x: clip;
   border: 1px solid rgba(7, 18, 15, 0.12);
+  border-radius: 34px;
   background: rgba(255, 255, 255, 0.82);
   box-shadow: 0 24px 80px rgba(7, 18, 15, 0.08);
   backdrop-filter: blur(18px);
@@ -225,7 +278,26 @@
   display: grid;
   gap: clamp(22px, 3vw, 34px);
   min-height: 640px;
+  max-height: min(820px, calc(100svh - 48px));
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: clamp(20px, 3.5vw, 42px);
+}
+
+.quote-main-panel {
+  scrollbar-color: rgba(7, 18, 15, 0.2) transparent;
+  scrollbar-width: thin;
+}
+
+.quote-main-panel::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  display: block;
+}
+
+.quote-main-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(7, 18, 15, 0.18);
 }
 
 .quote-step-header {
@@ -294,6 +366,7 @@
   align-content: start;
   padding: 18px;
   border: 1px solid rgba(7, 18, 15, 0.11);
+  border-radius: 26px;
   background: #fbfaf5;
   cursor: pointer;
   transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
@@ -314,6 +387,14 @@
   transform: translateY(-2px);
 }
 
+.quote-choice[data-active='true'],
+.quote-extra[data-active='true'] {
+  border-color: rgba(7, 18, 15, 0.28);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(200, 255, 34, 0.2), transparent 34%),
+    #ffffff;
+}
+
 .quote-choice input,
 .quote-extra input[type='checkbox'] {
   position: absolute;
@@ -322,20 +403,26 @@
 }
 
 .quote-choice__mark {
-  display: inline-flex;
-  width: 20px;
-  height: 20px;
-  border: 1px solid rgba(7, 18, 15, 0.24);
-  border-radius: 999px;
-  margin-top: 2px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(7, 18, 15, 0.22);
+  border-radius: 50%;
+  margin-top: 1px;
   background: #ffffff;
-  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  box-shadow: inset 0 0 0 6px #ffffff;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.quote-choice__mark::after {
+  content: none;
 }
 
 .quote-choice[data-active='true'] .quote-choice__mark {
-  border-color: var(--color-text);
-  background: var(--color-lime);
-  box-shadow: inset 0 0 0 5px #ffffff;
+  border-color: rgba(7, 18, 15, 0.92);
+  background: var(--color-text);
+  box-shadow:
+    inset 0 0 0 6px #ffffff,
+    0 6px 16px rgba(7, 18, 15, 0.12);
 }
 
 .quote-choice strong,
@@ -435,20 +522,23 @@
 }
 
 .quote-extra label::before {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border: 1px solid rgba(7, 18, 15, 0.24);
-  border-radius: 6px;
-  margin-top: 2px;
-  content: '';
+  border-radius: 10px;
+  margin-top: 1px;
+  content: "";
   background: #ffffff;
-  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .quote-extra[data-active='true'] label::before {
   border-color: var(--color-text);
-  background: var(--color-lime);
-  box-shadow: inset 0 0 0 4px #ffffff;
+  background:
+    linear-gradient(135deg, transparent 0 40%, var(--color-text) 41% 58%, transparent 59%),
+    linear-gradient(45deg, transparent 0 52%, var(--color-text) 53% 70%, transparent 71%),
+    var(--color-lime);
+  box-shadow: 0 8px 20px rgba(200, 255, 34, 0.32);
 }
 
 .quote-extra__quantity {
@@ -471,6 +561,7 @@
 .quote-field textarea {
   width: 100%;
   border: 1px solid rgba(7, 18, 15, 0.13);
+  border-radius: 20px;
   background: #ffffff;
   color: var(--color-text);
   font: inherit;
@@ -517,9 +608,10 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding-top: clamp(10px, 2vw, 18px);
+  padding: clamp(10px, 2vw, 18px) 0 0;
   margin-top: auto;
   border-top: 1px solid rgba(7, 18, 15, 0.1);
+  background: transparent;
 }
 
 .quote-nav-button {
@@ -568,25 +660,9 @@
   color: rgba(248, 251, 243, 0.72);
 }
 
-.quote-live-summary__chips,
-.quote-breakdown div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.quote-live-summary__chips span,
-.quote-breakdown span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid rgba(248, 251, 243, 0.14);
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 850;
-  color: rgba(248, 251, 243, 0.76);
-  background: rgba(255, 255, 255, 0.07);
+.quote-live-summary__time {
+  padding-top: 14px;
+  border-top: 1px solid rgba(248, 251, 243, 0.14);
 }
 
 .quote-live-summary dl {
@@ -622,6 +698,70 @@
 .quote-final {
   display: grid;
   gap: 18px;
+}
+
+.quote-page-wizard--summary {
+  width: min(920px, 100%);
+}
+
+.quote-summary-card {
+  display: grid;
+  gap: clamp(18px, 3vw, 28px);
+  padding: clamp(22px, 4vw, 46px);
+  border: 1px solid rgba(7, 18, 15, 0.12);
+  border-radius: 36px;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(200, 255, 34, 0.2), transparent 26rem),
+    rgba(255, 255, 255, 0.88);
+  box-shadow: 0 28px 90px rgba(7, 18, 15, 0.09);
+  backdrop-filter: blur(18px);
+}
+
+.quote-summary-card__header {
+  display: grid;
+  gap: 12px;
+}
+
+.quote-summary-card__header span {
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+  color: rgba(7, 18, 15, 0.52);
+  text-transform: uppercase;
+}
+
+.quote-summary-card__header h1 {
+  max-width: 12ch;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.35rem, 5vw, 5.4rem);
+  font-weight: 900;
+  line-height: 0.96;
+  color: var(--color-text);
+}
+
+.quote-summary-card__header strong {
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 8vw, 7rem);
+  font-weight: 900;
+  line-height: 0.88;
+  color: var(--color-text);
+}
+
+.quote-summary-card__header p {
+  margin: 0;
+  font-size: clamp(0.98rem, 1.2vw, 1.12rem);
+  font-weight: 700;
+  line-height: 1.5;
+  color: rgba(7, 18, 15, 0.62);
+}
+
+.quote-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  padding-top: 4px;
 }
 
 .quote-final__price {
@@ -669,10 +809,32 @@
   background: #ffffff;
 }
 
-.quote-breakdown span {
-  border-color: rgba(7, 18, 15, 0.12);
+.quote-breakdown ul {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.quote-breakdown li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.45;
   color: rgba(7, 18, 15, 0.7);
-  background: #fbfaf5;
+}
+
+.quote-breakdown li::before {
+  position: absolute;
+  top: 0.62em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  content: "";
+  background: rgba(7, 18, 15, 0.44);
 }
 
 .quote-result__button {
@@ -700,12 +862,38 @@
 
   .quote-main-panel {
     min-height: auto;
+    max-height: none;
+    overflow-y: visible;
   }
 }
 
 @media (max-width: 760px) {
   .quote-page {
     padding-top: 24px;
+  }
+
+  .quote-landing-card {
+    min-height: 150px;
+    gap: 10px;
+    padding: 24px;
+    border-radius: 26px;
+  }
+
+  .quote-landing-card strong {
+    font-size: clamp(2.9rem, 18vw, 4.6rem);
+  }
+
+  .quote-landing-card::before {
+    width: 112px;
+    height: 112px;
+  }
+
+  .quote-landing-card::after {
+    right: 20px;
+    bottom: 20px;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
   }
 
   .quote-page-hero h1,
@@ -732,12 +920,8 @@
   }
 
   .quote-navigation {
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
     grid-template-columns: 1fr 1fr;
     padding: 12px 0 0;
-    background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.94) 24%);
   }
 
   .quote-nav-button {

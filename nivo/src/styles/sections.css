@@ -15,6 +15,66 @@
   --parallax-r-inverse: 0deg;
 }
 
+.section-scroll-cue {
+  appearance: none;
+  position: absolute;
+  right: clamp(22px, 4vw, 56px);
+  bottom: clamp(22px, 4vw, 46px);
+  z-index: 2;
+  display: grid;
+  width: 60px;
+  height: 78px;
+  place-items: center;
+  border: 1px solid rgba(7, 18, 15, 0.08);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 48% 42%, rgba(255, 255, 255, 0.76), transparent 42%),
+    rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 18px 44px rgba(7, 18, 15, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -14px 28px rgba(7, 18, 15, 0.03);
+  cursor: pointer;
+  pointer-events: auto;
+  animation: section-cue-float 4.8s ease-in-out infinite;
+}
+
+.section-scroll-cue span {
+  display: block;
+  width: 44px;
+  height: 60px;
+  border-radius: 18px;
+  background-image: url("/images/cevrons.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: contrast(1.04) saturate(0.25);
+  opacity: 0.84;
+  animation: section-chevron-wave 4.2s cubic-bezier(0.22, 0.72, 0.24, 1) infinite;
+}
+
+.quote-section {
+  min-height: clamp(680px, 78svh, 860px);
+  padding-bottom: max(var(--section-y), 132px);
+}
+
+.quote-section .section-scroll-cue {
+  right: clamp(24px, 5vw, 76px);
+  bottom: clamp(28px, 5vw, 64px);
+}
+
+.section-scroll-cue:hover {
+  box-shadow:
+    0 24px 58px rgba(7, 18, 15, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -14px 28px rgba(7, 18, 15, 0.03);
+}
+
+.section-scroll-cue:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 4px;
+}
+
 .parallax-layer {
   position: relative;
   z-index: 1;
@@ -32,6 +92,41 @@
 
 .parallax-layer--quiet {
   transform: translate3d(0, var(--parallax-c), 0);
+}
+
+@keyframes section-cue-float {
+  0%,
+  100% {
+    scale: 0.992;
+    translate: 0 -1px;
+  }
+
+  50% {
+    scale: 1;
+    translate: 0 3px;
+  }
+}
+
+@keyframes section-chevron-wave {
+  0% {
+    opacity: 0.6;
+    transform: translateY(-5px) scale(0.97);
+  }
+
+  35% {
+    opacity: 0.94;
+    transform: translateY(0) scale(1.012);
+  }
+
+  68% {
+    opacity: 0.94;
+    transform: translateY(4px) scale(0.998);
+  }
+
+  100% {
+    opacity: 0.6;
+    transform: translateY(8px) scale(0.975);
+  }
 }
 
 .section-grid {
@@ -177,23 +272,32 @@
   flex-wrap: wrap;
   width: min(1180px, 100%);
   max-width: 100%;
-  gap: 10px;
+  gap: 12px 24px;
   margin: clamp(28px, 3.6vw, 48px) auto 0;
 }
 
 .standards-strip span,
 .service-note span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid rgba(7, 18, 15, 0.12);
-  border-radius: 999px;
+  position: relative;
+  display: inline-block;
+  padding-left: 16px;
   font-size: 0.8rem;
   font-weight: 800;
+  line-height: 1.45;
   color: rgba(7, 18, 15, 0.68);
-  background: rgba(255, 255, 255, 0.5);
   overflow-wrap: anywhere;
+}
+
+.standards-strip span::before,
+.service-note span::before {
+  position: absolute;
+  top: 0.62em;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  content: "";
+  background: rgba(7, 18, 15, 0.44);
 }
 
 .services-section {
@@ -284,26 +388,38 @@
 }
 
 .faq-section {
+  padding-bottom: max(var(--section-y), 132px);
   border-top: 1px solid var(--color-border);
   background: #f8f7f1;
 }
 
 .faq-list {
   display: grid;
-  border-top: 1px solid var(--color-border);
+  gap: 10px;
 }
 
 .faq-list details {
-  border-bottom: 1px solid var(--color-border);
-  background: transparent;
+  border: 1px solid rgba(7, 18, 15, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.42);
+  box-shadow: 0 14px 34px rgba(7, 18, 15, 0.035);
   transition:
     background 180ms ease,
-    padding 180ms ease;
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .faq-list details[open] {
-  background: rgba(255, 255, 255, 0.4);
-  padding-inline: clamp(14px, 2vw, 22px);
+  border-color: rgba(7, 18, 15, 0.16);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 20px 48px rgba(7, 18, 15, 0.06);
+}
+
+.faq-list details:hover {
+  border-color: rgba(7, 18, 15, 0.18);
+  background: #ffffff;
+  transform: translateY(-2px);
 }
 
 .faq-list summary {
@@ -312,7 +428,7 @@
   justify-content: space-between;
   gap: 20px;
   cursor: pointer;
-  padding: 22px 0;
+  padding: 22px clamp(18px, 2.2vw, 28px);
   font-weight: 800;
   list-style: none;
   transition: color 180ms ease;
@@ -321,14 +437,22 @@
 
 .faq-list summary::after {
   flex: 0 0 auto;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(7, 18, 15, 0.12);
+  border-radius: 50%;
   content: "+";
   font-family: var(--font-display);
   font-size: 1.1rem;
   line-height: 1;
-  transition: transform 180ms ease;
+  background: rgba(255, 255, 255, 0.62);
+  transition: transform 180ms ease, background 180ms ease;
 }
 
 .faq-list details[open] summary::after {
+  background: var(--color-lime);
   transform: rotate(45deg);
 }
 
@@ -341,7 +465,7 @@
 }
 
 .faq-list p {
-  padding: 0 0 24px;
+  padding: 0 clamp(18px, 2.2vw, 28px) 24px;
   margin: 0;
   font-weight: 600;
   line-height: 1.58;
@@ -477,6 +601,50 @@
     padding-block: clamp(52px, 14vw, 78px);
   }
 
+  .section-scroll-cue {
+    right: 16px;
+    bottom: 16px;
+    width: 52px;
+    height: 68px;
+    border-radius: 20px;
+  }
+
+  .section-scroll-cue span {
+    width: 38px;
+    height: 52px;
+    border-radius: 16px;
+  }
+
+  .quote-section {
+    min-height: 620px;
+    padding-bottom: 108px;
+  }
+
+  .services-section {
+    padding-bottom: 118px;
+  }
+
+  .faq-section {
+    padding-bottom: 112px;
+  }
+
+  .quote-section .section-scroll-cue {
+    right: 16px;
+    bottom: 18px;
+  }
+
+  .faq-section .section-scroll-cue {
+    right: 14px;
+    bottom: 14px;
+    width: 46px;
+    height: 60px;
+  }
+
+  .faq-section .section-scroll-cue span {
+    width: 34px;
+    height: 46px;
+  }
+
   .section-copy h2,
   .section-heading h2 {
     max-width: 100%;
@@ -540,6 +708,7 @@
   .standards-strip,
   .service-note {
     display: grid;
+    gap: 10px;
   }
 
   .contact-actions {
@@ -566,5 +735,10 @@
     animation: none;
     transition: none;
     transform: none;
+  }
+
+  .section-scroll-cue,
+  .section-scroll-cue span {
+    animation: none;
   }
 }

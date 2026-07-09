@@ -56,6 +56,7 @@
   left: clamp(24px, 6.8vw, 112px);
   width: min(36vw, 520px);
   max-width: calc(100% - 48px);
+  justify-items: center;
   gap: clamp(10px, 1.5vw, 18px);
   opacity: 0;
   transform: translate3d(-18px, -45%, 0);
@@ -106,6 +107,43 @@
   height: 1px;
   content: "";
   background: rgba(7, 18, 15, 0.34);
+}
+
+.hero__intro-actions {
+  display: grid;
+  width: fit-content;
+  max-width: 100%;
+  gap: 12px;
+  margin-top: clamp(8px, 1.5vw, 18px);
+  pointer-events: auto;
+}
+
+.hero__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 1px solid rgba(7, 18, 15, 0.15);
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  background: var(--color-lime);
+  box-shadow: 0 14px 34px rgba(200, 255, 34, 0.32), inset 0 -2px 0 rgba(7, 18, 15, 0.12);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.hero__cta:hover {
+  background: #d8ff4d;
+  box-shadow: 0 20px 48px rgba(200, 255, 34, 0.42), inset 0 -2px 0 rgba(7, 18, 15, 0.14);
+  transform: translateY(-2px);
 }
 
 .hero__section-copy {
@@ -199,6 +237,105 @@
   color: rgba(248, 251, 243, 0.82);
 }
 
+.hero__scroll-cue {
+  appearance: none;
+  position: absolute;
+  right: clamp(22px, 4.6vw, 68px);
+  bottom: clamp(22px, 4vw, 48px);
+  z-index: 4;
+  display: grid;
+  width: 72px;
+  height: 92px;
+  place-items: center;
+  border: 1px solid rgba(7, 18, 15, 0.09);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 48% 42%, rgba(255, 255, 255, 0.78), transparent 42%),
+    color-mix(in srgb, var(--color-bg) 82%, transparent);
+  box-shadow:
+    0 24px 68px rgba(7, 18, 15, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    inset 0 -18px 34px rgba(7, 18, 15, 0.035);
+  backdrop-filter: blur(16px);
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.96;
+  animation: scroll-cue-float 4.8s ease-in-out infinite;
+}
+
+.hero__scroll-cue span {
+  display: block;
+  width: 52px;
+  height: 72px;
+  border-radius: 20px;
+  background-image: url("/images/cevrons.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: contrast(1.04) saturate(0.35);
+  opacity: 0.92;
+  animation: scroll-image-wave 4.2s cubic-bezier(0.22, 0.72, 0.24, 1) infinite;
+}
+
+.hero__scroll-cue:hover {
+  box-shadow:
+    0 30px 76px rgba(7, 18, 15, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    inset 0 -18px 34px rgba(7, 18, 15, 0.035);
+}
+
+.hero__scroll-cue:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 4px;
+}
+
+.hero[data-visual-state="clean"] .hero__scroll-cue,
+.hero[data-transition-target="clean"] .hero__scroll-cue {
+  border-color: rgba(248, 251, 243, 0.22);
+  color: #f8fbf3;
+  background:
+    radial-gradient(circle at 48% 42%, rgba(248, 251, 243, 0.2), transparent 42%),
+    rgba(248, 251, 243, 0.08);
+  box-shadow:
+    0 18px 54px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(248, 251, 243, 0.16);
+}
+
+@keyframes scroll-cue-float {
+  0%,
+  100% {
+    scale: 0.992;
+    translate: 0 -1px;
+  }
+
+  50% {
+    scale: 1;
+    translate: 0 3px;
+  }
+}
+
+@keyframes scroll-image-wave {
+  0% {
+    opacity: 0.64;
+    transform: translateY(-5px) scale(0.97);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateY(0) scale(1.012);
+  }
+
+  68% {
+    opacity: 1;
+    transform: translateY(4px) scale(0.998);
+  }
+
+  100% {
+    opacity: 0.64;
+    transform: translateY(8px) scale(0.975);
+  }
+}
+
 @media (max-width: 760px) {
   .hero {
     min-height: var(--hero-vh, 100svh);
@@ -245,6 +382,18 @@
     height: 1px;
     content: "";
     background: rgba(7, 18, 15, 0.34);
+  }
+
+  .hero__intro-actions {
+    justify-items: center;
+    margin-top: 6px;
+  }
+
+  .hero__cta {
+    min-height: 48px;
+    padding-inline: 20px;
+    font-size: 0.68rem;
+    letter-spacing: 0.055em;
   }
 
   .hero__section-copy {
@@ -295,5 +444,26 @@
   .hero__section-copy span {
     max-width: 100%;
     overflow-wrap: anywhere;
+  }
+
+  .hero__scroll-cue {
+    right: calc(50% - 28px);
+    bottom: 12px;
+    width: 56px;
+    height: 72px;
+    border-radius: 22px;
+  }
+
+  .hero__scroll-cue span {
+    width: 42px;
+    height: 58px;
+    border-radius: 17px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__scroll-cue,
+  .hero__scroll-cue span {
+    animation: none;
   }
 }

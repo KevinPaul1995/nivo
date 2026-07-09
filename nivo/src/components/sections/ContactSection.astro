@@ -15,7 +15,7 @@ import { site } from "../../data/siteContent";
       </div>
 
       <div class="contact-actions">
-        <a class="button quote-cta" href="#cotizacion">
+        <a class="button quote-cta" href="/cotizar/">
           Cotiza con nosotros
         </a>
         <a class="button button--light" href={site.contact.whatsappHref} target="_blank" rel="noreferrer">
@@ -28,39 +28,3 @@ import { site } from "../../data/siteContent";
     </div>
   </div>
 </section>
-
-<script is:inline>
-  (() => {
-    const scrollToQuote = () => {
-      const target = document.getElementById("cotizacion");
-
-      if (!target) {
-        return;
-      }
-
-      target.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "nearest",
-      });
-    };
-
-    const handleAnchor = (event) => {
-      const link = event.target.closest('a[href="#cotizacion"]');
-
-      if (!link) {
-        return;
-      }
-
-      event.preventDefault();
-      scrollToQuote();
-      history.replaceState(null, "", "#cotizacion");
-    };
-
-    document.addEventListener("click", handleAnchor);
-
-    if (location.hash === "#cotizacion") {
-      window.requestAnimationFrame(scrollToQuote);
-    }
-  })();
-</script>

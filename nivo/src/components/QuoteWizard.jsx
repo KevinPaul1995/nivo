@@ -38,38 +38,38 @@ const singleQuantityExtras = new Set([
 const quoteFlow = [
   {
     eyebrow: 'Paso 1 de 7',
-    title: '¿Qué tipo de espacio quieres limpiar?',
-    description: 'Esto define la base del servicio y el tipo de ambientes que vamos a considerar.',
+    title: 'Elige tu espacio',
+    description: 'Toca una tarjeta y presiona Continuar.',
   },
   {
     eyebrow: 'Paso 2 de 7',
-    title: 'Ambientes principales',
-    description: 'Selecciona las áreas que realmente se van a limpiar en esta visita.',
+    title: 'Cuenta los ambientes',
+    description: 'Usa + y - para ajustar cantidades.',
   },
   {
     eyebrow: 'Paso 3 de 7',
-    title: 'Tamaño, estado y frecuencia',
-    description: 'La última limpieza y la rutina ayudan a estimar el esfuerzo correcto.',
+    title: 'Define el alcance',
+    description: 'Selecciona tamaño, estado actual y frecuencia.',
   },
   {
     eyebrow: 'Paso 4 de 7',
-    title: 'Materiales, mascotas y urgencia',
-    description: 'Indica materiales, perros, gatos y disponibilidad de agenda.',
+    title: 'Detalles de la visita',
+    description: 'Indica materiales, mascotas y fecha deseada.',
   },
   {
     eyebrow: 'Paso 5 de 7',
-    title: 'Servicios adicionales',
-    description: 'Agrega solo los detalles que necesitas incluir en la visita.',
+    title: 'Extras',
+    description: 'Agrega solo lo que necesitas.',
   },
   {
     eyebrow: 'Paso 6 de 7',
-    title: 'Ubicación y observaciones',
-    description: 'La ciudad y el sector ayudan a calcular movilización y coordinar llegada.',
+    title: 'Ubicación',
+    description: 'Indica ciudad, sector y cualquier dato importante.',
   },
   {
     eyebrow: 'Resultado',
-    title: 'Valor calculado de limpieza',
-    description: 'Este valor se calcula con los ambientes, extras, tiempo operativo y condiciones que seleccionaste.',
+    title: 'Valor calculado',
+    description: 'Envía el resumen por WhatsApp para coordinar la visita.',
   },
 ];
 
@@ -257,9 +257,9 @@ function calculateExtraMetrics(extra, quantity, context) {
 
     return {
       quantity: billableUnits,
-      price: roundTo(billableUnits * extra.roomRate, 1),
+      price: roundTo(billableUnits * extra.roomRate, quoteConfig.rounding),
       minutes: extra.minutes * billableUnits,
-      appliesMultipliers: extra.appliesMultipliers !== false,
+      appliesMultipliers: extra.appliesMultipliers === true,
     };
   }
 
@@ -272,7 +272,7 @@ function calculateExtraMetrics(extra, quantity, context) {
     quantity,
     price: roundTo(extra.price * quantity * surfaceMultiplier, 0.5),
     minutes: Math.round(extra.minutes * quantity * surfaceMultiplier),
-    appliesMultipliers: extra.appliesMultipliers !== false,
+    appliesMultipliers: extra.appliesMultipliers === true,
     detailLabel: surface
       ? surface.value === 'otros' && context.answers.delicateSurfaceOther
         ? `${surface.label}: ${context.answers.delicateSurfaceOther}`
@@ -375,7 +375,8 @@ function calculateQuote(answers) {
     .reduce((total, item) => total + item.price, 0);
   const extraTotal = variableExtraTotal + fixedExtraTotal;
   const laborSubtotal = serviceType.basePrice + areaTotal + variableExtraTotal + petTotal;
-  const fixedCharges = fixedExtraTotal + materials.price + city.travelFee;
+  const operationalFixedCharges = materials.price + city.travelFee;
+  const fixedCharges = fixedExtraTotal + operationalFixedCharges;
   const firstVisitMultiplier = serviceType.multiplier * size.multiplier * condition.multiplier;
   const followUpVisitMultiplier = serviceType.multiplier * size.multiplier * followUpCondition.multiplier;
   const packageMultiplier = frequency.multiplier ?? 1;
@@ -388,13 +389,15 @@ function calculateQuote(answers) {
   const firstVisitLaborValue = laborSubtotal * firstVisitMultiplier * firstVisitPriceMultiplier;
   const followUpVisitLaborValue = laborSubtotal * followUpVisitMultiplier;
   const packageLaborTotal = firstVisitLaborValue + (followUpVisitLaborValue * followUpVisitCount);
-  const packageFixedTotal = fixedCharges * visitCount;
+  const serviceFixedTotal = operationalFixedCharges * visitCount;
+  const extraFixedTotal = fixedExtraTotal * visitCount;
+  const packageFixedTotal = serviceFixedTotal + extraFixedTotal;
   const packageDiscount = packageLaborTotal * (1 - packageMultiplier);
   const firstVisitValue = firstVisitLaborValue + fixedCharges;
   const followUpVisitValue = followUpVisitLaborValue + fixedCharges;
-  const estimated = Math.max(
-    quoteConfig.minPrice * visitCount,
-    roundTo((packageLaborTotal * packageMultiplier) + packageFixedTotal),
+  const serviceTotalBeforeExtras = (packageLaborTotal * packageMultiplier) + serviceFixedTotal;
+  const estimated = roundTo(
+    Math.max(quoteConfig.minPrice * visitCount, serviceTotalBeforeExtras) + extraFixedTotal,
   );
   const low = estimated;
   const high = estimated;
@@ -586,11 +589,12 @@ function StepHeader({ activeStep }) {
 export default function QuoteWizard() {
   const [answers, setAnswers] = useState(getInitialAnswers);
   const [activeStep, setActiveStep] = useState(0);
+  const [summaryReady, setSummaryReady] = useState(false);
 
   const visibleCounters = useMemo(() => getVisibleCounters(answers.serviceType), [answers.serviceType]);
   const quote = useMemo(() => calculateQuote(answers), [answers]);
   const whatsappHref = useMemo(() => buildWhatsappHref(answers, quote), [answers, quote]);
-  const progress = ((activeStep + 1) / quoteFlow.length) * 100;
+  const progress = summaryReady ? 100 : ((activeStep + 1) / quoteFlow.length) * 100;
 
   function updateField(field, value) {
     setAnswers((current) => ({
@@ -657,7 +661,16 @@ export default function QuoteWizard() {
   }
 
   function goBack() {
+    setSummaryReady(false);
     setActiveStep((current) => Math.max(current - 1, 0));
+  }
+
+  function finishQuote() {
+    setSummaryReady(true);
+  }
+
+  function editQuote() {
+    setSummaryReady(false);
   }
 
   function renderChoiceGrid(name, options, columns = 'auto') {
@@ -902,19 +915,75 @@ export default function QuoteWizard() {
 
         <div className="quote-breakdown">
           <h2>Resumen usado para calcular</h2>
-          <div>
+          <ul>
             {quote.areaItems.map((item) => (
-              <span key={item.id}>{item.label}: {item.quantity}</span>
+              <li key={item.id}>{item.label}: {item.quantity}</li>
             ))}
             {quote.extraItems.map((item) => (
-              <span key={item.id}>{item.summaryLabel ?? item.label}: {item.quantity}</span>
+              <li key={item.id}>{item.summaryLabel ?? item.label}: {item.quantity}</li>
             ))}
-          </div>
+          </ul>
         </div>
 
-        <a className="quote-result__button" href={whatsappHref} target="_blank" rel="noreferrer">
-          Enviar resumen por WhatsApp
-        </a>
+      </div>
+    );
+  }
+
+  if (summaryReady) {
+    return (
+      <div className="quote-page-wizard quote-page-wizard--summary">
+        <div className="quote-progress" aria-hidden="true">
+          <span style={{ width: `${progress}%` }} />
+        </div>
+
+        <article className="quote-summary-card">
+          <div className="quote-summary-card__header">
+            <span>Cotización lista</span>
+            <h1>Resumen de tu limpieza</h1>
+            <strong>{formatMoney(quote.estimated)}</strong>
+            <p>{getFrequencySummary(quote)} · {getTimeSummary(quote)}</p>
+          </div>
+
+          <div className="quote-final__grid">
+            <article>
+              <span>Servicio</span>
+              <strong>{quote.serviceType.label}</strong>
+            </article>
+            <article>
+              <span>Estado inicial</span>
+              <strong>{quote.condition.label}</strong>
+            </article>
+            <article>
+              <span>Ciudad</span>
+              <strong>{quote.city.label}</strong>
+            </article>
+            <article>
+              <span>Equipo sugerido</span>
+              <strong>{quote.suggestedPeople} persona(s)</strong>
+            </article>
+          </div>
+
+          <div className="quote-breakdown">
+            <h2>Incluido en el cálculo</h2>
+            <ul>
+              {quote.areaItems.map((item) => (
+                <li key={item.id}>{item.label}: {item.quantity}</li>
+              ))}
+              {quote.extraItems.map((item) => (
+                <li key={item.id}>{item.summaryLabel ?? item.label}: {item.quantity}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="quote-summary-actions">
+            <button className="quote-nav-button quote-nav-button--ghost" onClick={editQuote} type="button">
+              Editar datos
+            </button>
+            <a className="quote-result__button" href={whatsappHref} target="_blank" rel="noreferrer">
+              Confirmar por WhatsApp
+            </a>
+          </div>
+        </article>
       </div>
     );
   }
@@ -940,9 +1009,9 @@ export default function QuoteWizard() {
                 Continuar
               </button>
             ) : (
-              <a className="quote-nav-button" href={whatsappHref} target="_blank" rel="noreferrer">
-                Confirmar por WhatsApp
-              </a>
+              <button className="quote-nav-button" onClick={finishQuote} type="button">
+                Finalizar
+              </button>
             )}
           </div>
         </div>
@@ -950,29 +1019,8 @@ export default function QuoteWizard() {
         <aside className="quote-live-summary" aria-live="polite">
           <span className="quote-live-summary__label">Valor en vivo</span>
           <strong>{formatMoney(quote.estimated)}</strong>
-          <p>Se actualiza segun ambientes, extras, tiempo estimado, materiales y ciudad.</p>
-
-          <div className="quote-live-summary__chips">
-            <span>{quote.serviceType.shortLabel}</span>
-            <span>{quote.condition.label}</span>
-            <span>{quote.frequency.label}</span>
-            <span>{quote.city.label}</span>
-          </div>
-
-          <dl>
-            <div>
-              <dt>Equipo sugerido</dt>
-              <dd>{quote.suggestedPeople} persona(s)</dd>
-            </div>
-            <div>
-              <dt>Tiempo aprox.</dt>
-              <dd>{getTimeSummary(quote)}</dd>
-            </div>
-            <div>
-              <dt>Extras</dt>
-              <dd>{quote.extraItems.length}</dd>
-            </div>
-          </dl>
+          <p>{getFrequencySummary(quote)}</p>
+          <p className="quote-live-summary__time">{getTimeSummary(quote)}</p>
         </aside>
       </div>
     </div>

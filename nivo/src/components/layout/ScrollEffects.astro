@@ -4,6 +4,49 @@
     const sections = Array.from(document.querySelectorAll("main > .content-section[data-parallax-section]"))
       .filter((section) => !section.closest(".hero"));
 
+    const scrollToNextSection = (section) => {
+      const nextSection = section?.nextElementSibling;
+
+      if (!nextSection) {
+        return;
+      }
+
+      nextSection.scrollIntoView({
+        behavior: reduceMotionQuery.matches ? "auto" : "smooth",
+        block: "start",
+      });
+    };
+
+    document.addEventListener("click", (event) => {
+      const cue = event.target.closest("[data-scroll-next]");
+
+      if (!cue) {
+        return;
+      }
+
+      const section = cue.closest("section");
+
+      if (!section) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (section.classList.contains("hero")) {
+        const heroEvent = new CustomEvent("nivo:hero-next", {
+          cancelable: true,
+        });
+
+        document.dispatchEvent(heroEvent);
+
+        if (heroEvent.defaultPrevented) {
+          return;
+        }
+      }
+
+      scrollToNextSection(section);
+    });
+
     if (!sections.length || reduceMotionQuery.matches) {
       return;
     }
@@ -23,10 +66,10 @@
         const centered = progress - 0.5;
 
         const compact = window.innerWidth < 760;
-        const copyRange = compact ? -126 : -320;
-        const panelRange = compact ? 112 : 260;
-        const quietRange = compact ? -72 : -180;
-        const rotationRange = compact ? 0 : 3.2;
+        const copyRange = compact ? -48 : -118;
+        const panelRange = compact ? 42 : 96;
+        const quietRange = compact ? -28 : -72;
+        const rotationRange = compact ? 0 : 1.1;
 
         section.style.setProperty("--parallax-a", `${(centered * copyRange).toFixed(2)}px`);
         section.style.setProperty("--parallax-b", `${(centered * panelRange).toFixed(2)}px`);

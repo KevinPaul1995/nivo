@@ -85,16 +85,18 @@ function createRandom(seed) {
 }
 
 function getParticleCount(width, reducedMotion) {
+  const mobileDensityRatio = width < 760 ? 0.75 : 1;
+
   if (reducedMotion) {
-    return width < 720 ? 2600 : 4600;
+    return Math.round((width < 720 ? 2600 : 4600) * mobileDensityRatio);
   }
 
   if (width < 560) {
-    return 5600;
+    return Math.round(5600 * mobileDensityRatio);
   }
 
   if (width < 920) {
-    return 8800;
+    return Math.round(8800 * mobileDensityRatio);
   }
 
   return 19000;
@@ -723,6 +725,17 @@ export default function ParticleHero() {
       }
     }
 
+    function onHeroNext(event) {
+      if (transitioning) {
+        event.preventDefault();
+        return;
+      }
+
+      if (startTransition(1)) {
+        event.preventDefault();
+      }
+    }
+
     function resize() {
       syncViewportHeight();
       width = Math.max(1, mount.clientWidth);
@@ -923,6 +936,7 @@ export default function ParticleHero() {
     window.addEventListener('keydown', onKeyDown, {
       capture: true,
     });
+    document.addEventListener('nivo:hero-next', onHeroNext);
     window.addEventListener('resize', resize);
     window.visualViewport?.addEventListener('resize', resize);
     window.visualViewport?.addEventListener('scroll', resize);
@@ -950,6 +964,7 @@ export default function ParticleHero() {
       window.removeEventListener('keydown', onKeyDown, {
         capture: true,
       });
+      document.removeEventListener('nivo:hero-next', onHeroNext);
       window.removeEventListener('resize', resize);
       window.visualViewport?.removeEventListener('resize', resize);
       window.visualViewport?.removeEventListener('scroll', resize);

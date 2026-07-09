@@ -6,8 +6,7 @@ import { services, serviceNotes } from "../../data/siteContent";
   <div class="parallax-layer parallax-layer--copy">
     <div class="section-heading section-heading--center">
       <span class="section-eyebrow">Casas · oficinas · empresas</span>
-      <h2 id="services-title">Limpieza pensada para tu rutina.</h2>
-      <p>Contrata una visita puntual o recurrente sin convertir la coordinación en otro pendiente.</p>
+      <h2 id="services-title">Limpieza para tu espacio.</h2>
     </div>
   </div>
 
@@ -17,7 +16,6 @@ import { services, serviceNotes } from "../../data/siteContent";
         services.map((service) => (
           <article class="service-card">
             <h3>{service.title}</h3>
-            <p>{service.description}</p>
             <ul>
               {service.items.map((item) => (
                 <li>{item}</li>
@@ -36,4 +34,8 @@ import { services, serviceNotes } from "../../data/siteContent";
       ))
     }
   </div>
+
+  <button class="section-scroll-cue" type="button" data-scroll-next aria-label="Ir a la siguiente sección">
+    <span></span>
+  </button>
 </section>
