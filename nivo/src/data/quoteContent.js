@@ -23,8 +23,8 @@ export const quoteConfig = {
   // Evita planificar jornadas demasiado largas para una sola persona.
   maxHoursPerPerson: 5,
 
-  // Margen operativo para llegada, preparación, revisión y cierre.
-  timeSafetyBufferMinutes: 45,
+  // No se suma margen de seguridad al tiempo mostrado.
+  timeSafetyBufferMinutes: 0,
 
   businessName: 'NIVO',
 };
@@ -342,9 +342,21 @@ export const residentialCounters = [
     max: 5,
   },
   {
+    id: 'storageAreas',
+    label: 'Bodega / cuarto de guardado',
+    detail: 'Barrido, retiro de polvo visible y orden ligero de paso.',
+    info: 'No incluye inventariar, mover carga pesada ni reorganizar objetos personales. Aumenta si hay polvo acumulado o muchos objetos en el piso.',
+    unitLabel: 'bodega',
+    price: 2,
+    minutes: 28,
+    defaultValue: 0,
+    max: 6,
+  },
+  {
     id: 'balconies',
-    label: 'Balcón / terraza',
-    detail: 'Balcón, patio pequeño o terraza.',
+    label: 'Patio / balcón / terraza',
+    detail: 'Barrido y limpieza superficial. No es jardinería.',
+    info: 'Cubre barrido, retiro de polvo y residuos ligeros. No incluye cortar césped, podar plantas, lavar patios con máquina ni jardinería.',
     unitLabel: 'área',
     price: 2,
     minutes: 25,
@@ -397,12 +409,24 @@ export const moveOutCounters = [
   {
     id: 'emptyOutdoorAreas',
     label: 'Patio / balcón',
-    detail: 'Patio pequeño, terraza o balcón de entrega.',
+    detail: 'Barrido y limpieza superficial. No es jardinería.',
+    info: 'Para entrega de inmueble: barrido, retiro de polvo visible y residuos ligeros. No incluye jardinería ni escombros.',
     unitLabel: 'área',
     price: 2,
     minutes: 24,
     defaultValue: 0,
     max: 8,
+  },
+  {
+    id: 'emptyStorageAreas',
+    label: 'Bodega vacía',
+    detail: 'Barrido, polvo visible y piso de bodega.',
+    info: 'Aplica cuando la bodega está vacía o casi vacía. Si hay carga pesada u objetos acumulados, se confirma antes de cerrar.',
+    unitLabel: 'bodega',
+    price: 1.5,
+    minutes: 22,
+    defaultValue: 0,
+    max: 6,
   },
 ];
 
@@ -450,7 +474,8 @@ export const postConstructionCounters = [
   {
     id: 'postOutdoorAreas',
     label: 'Patio / garaje',
-    detail: 'Áreas exteriores con polvo o residuos ligeros.',
+    detail: 'Barrido de polvo de obra y residuos ligeros. No es jardinería.',
+    info: 'Aplica para polvo o residuos ligeros de obra en patios o garajes. No incluye escombros pesados, jardinería ni lavado a presión.',
     unitLabel: 'área',
     price: 3,
     minutes: 35,
@@ -519,6 +544,28 @@ export const businessCounters = [
     minutes: 20,
     defaultValue: 0,
     max: 30,
+  },
+  {
+    id: 'businessStorage',
+    label: 'Bodega / archivo',
+    detail: 'Barrido y limpieza superficial de paso. No incluye inventario.',
+    info: 'Para bodegas de local, archivo u oficina. No incluye mover carga pesada ni ordenar inventario.',
+    unitLabel: 'zona',
+    price: 2,
+    minutes: 25,
+    defaultValue: 0,
+    max: 12,
+  },
+  {
+    id: 'businessOutdoorAreas',
+    label: 'Patio / acceso exterior',
+    detail: 'Barrido y residuos ligeros. No es jardinería.',
+    info: 'Cubre ingreso, patio pequeño o área exterior de local/oficina. No incluye jardinería, escombros ni lavado especializado.',
+    unitLabel: 'área',
+    price: 2.5,
+    minutes: 28,
+    defaultValue: 0,
+    max: 10,
   },
 ];
 

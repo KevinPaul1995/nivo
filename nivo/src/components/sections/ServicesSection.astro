@@ -5,8 +5,8 @@ import { services, serviceNotes } from "../../data/siteContent";
 <section class="content-section services-section" id="servicios" aria-labelledby="services-title" data-parallax-section>
   <div class="parallax-layer parallax-layer--copy">
     <div class="section-heading section-heading--center">
-      <span class="section-eyebrow">Casas · oficinas · empresas</span>
-      <h2 id="services-title">Limpieza para tu espacio.</h2>
+      <span class="section-eyebrow" data-i18n="services.eyebrow">Casas · oficinas · empresas</span>
+      <h2 id="services-title" data-i18n="services.title">Limpieza para tu espacio.</h2>
     </div>
   </div>
 
@@ -15,10 +15,10 @@ import { services, serviceNotes } from "../../data/siteContent";
       {
         services.map((service) => (
           <article class="service-card">
-            <h3>{service.title}</h3>
+            <h3 data-i18n={`services.card.${service.title}.title`}>{service.title}</h3>
             <ul>
               {service.items.map((item) => (
-                <li>{item}</li>
+                <li data-i18n={`services.item.${item}`}>{item}</li>
               ))}
             </ul>
           </article>
@@ -30,12 +30,12 @@ import { services, serviceNotes } from "../../data/siteContent";
   <div class="service-note parallax-layer parallax-layer--quiet" aria-label="Modalidades de servicio">
     {
       serviceNotes.map((item) => (
-        <span>{item}</span>
+        <span data-i18n={`service-note.${item}`}>{item}</span>
       ))
     }
   </div>
 
   <button class="section-scroll-cue" type="button" data-scroll-next aria-label="Ir a la siguiente sección">
-    <span></span>
+    <span aria-hidden="true"></span>
   </button>
 </section>

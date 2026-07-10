@@ -4,7 +4,7 @@ export const site = {
   descriptor: 'Limpieza profesional',
   url: 'https://www.nivolimpieza.com/',
   description:
-    'Limpieza profesional de casas, oficinas y empresas en Ibarra, Atuntaqui, Cotacachi y Otavalo. Servicio con o sin materiales incluidos.',
+    'Limpieza profesional de casas, departamentos, oficinas y locales en Ibarra, Atuntaqui, Cotacachi y Otavalo. Servicio con o sin materiales incluidos.',
   serviceAreas: ['Ibarra', 'Atuntaqui', 'Cotacachi', 'Otavalo'],
   navItems: [
     { label: 'Inicio', href: '#inicio' },
@@ -33,20 +33,17 @@ export const coverageItems = [
 export const services = [
   {
     title: 'Casas',
-    description:
-      'Para mantener tu hogar limpio sin reorganizar tu día alrededor de la limpieza.',
+    description: 'Limpieza para hogares que necesitan orden, claridad y una visita bien coordinada.',
     items: ['Cocinas y baños', 'Dormitorios', 'Áreas sociales'],
   },
   {
     title: 'Oficinas',
-    description:
-      'Ambientes de trabajo limpios, ordenados y presentables para equipos y visitas.',
+    description: 'Ambientes de trabajo limpios, presentables y listos para equipos o clientes.',
     items: ['Puestos de trabajo', 'Salas de reunión', 'Zonas comunes'],
   },
   {
     title: 'Empresas',
-    description:
-      'Limpieza para locales, consultorios y espacios donde la imagen importa.',
+    description: 'Limpieza para locales, consultorios y espacios donde la imagen importa.',
     items: ['Áreas de atención', 'Superficies de contacto', 'Mantenimiento'],
   },
 ];
@@ -61,21 +58,21 @@ export const faqItems = [
   {
     question: '¿En qué ciudades trabaja NIVO?',
     answer:
-      'Atendemos Ibarra, Atuntaqui, Cotacachi y Otavalo. Si tu ubicación está cerca de estas zonas, puedes escribirnos para revisar disponibilidad y coordinar el horario más conveniente.',
+      'Atendemos Ibarra, Atuntaqui, Cotacachi y Otavalo. Si tu sector está cerca de estas ciudades, podemos revisar disponibilidad por WhatsApp.',
   },
   {
-    question: '¿El servicio puede incluir materiales?',
+    question: '¿Puedo contratar con o sin materiales?',
     answer:
-      'Sí. Podemos cotizar con materiales incluidos o trabajar con los productos que ya tienes en tu casa, oficina o empresa. Lo definimos antes de agendar para que el alcance quede claro.',
+      'Sí. Puedes usar tus propios productos o pedir que NIVO lleve materiales básicos o completos. Lo eliges en el cotizador antes de confirmar.',
   },
   {
-    question: '¿Qué tipo de espacios limpian?',
+    question: '¿Qué espacios limpian?',
     answer:
-      'Trabajamos en casas, oficinas, locales, consultorios y empresas. El servicio puede ser puntual o recurrente, según el uso del espacio y el nivel de mantenimiento que necesitas.',
+      'Trabajamos en casas, departamentos, oficinas, locales y espacios de entrega o post obra ligera. El cotizador adapta las preguntas según el tipo de espacio.',
   },
   {
-    question: '¿Qué información ayuda para cotizar mejor?',
+    question: '¿El valor del cotizador es el valor final?',
     answer:
-      'Escríbenos al 0996583089 o a contacto@nivolimpieza.com con ciudad, tipo de espacio, tamaño aproximado, frecuencia deseada y si prefieres limpieza con o sin materiales incluidos. Si puedes enviar fotos, la cotización será más precisa.',
+      'Sí, siempre que los datos ingresados sean reales. Al llegar verificamos ambientes, estado del espacio, acceso y extras seleccionados.',
   },
 ];

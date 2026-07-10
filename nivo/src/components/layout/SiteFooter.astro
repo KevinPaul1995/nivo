@@ -5,25 +5,27 @@ import { site } from "../../data/siteContent";
 <footer class="site-footer">
   <div class="site-footer__brand">
     <strong>{site.name}</strong>
-    <p>{site.description}</p>
+    <p data-i18n="footer.description">{site.description}</p>
   </div>
 
   <div class="site-footer__group">
-    <span>Contacto</span>
+    <span data-i18n="footer.contact">Contacto</span>
     <a href={site.contact.phoneHref}>{site.contact.phoneLabel}</a>
     <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
   </div>
 
   <div class="site-footer__group">
-    <span>Cobertura</span>
+    <span data-i18n="footer.coverage">Cobertura</span>
     <p>{site.serviceAreas.join(" · ")}</p>
   </div>
 
   <p class="site-footer__credit">
-    Diseño y desarrollo web por{" "}
+    <span data-i18n="footer.credit-prefix">Diseño y desarrollo web por</span>{" "}
     <a href="https://www.nommada.com" target="_blank" rel="noreferrer">
       Nommada Ingeniería
     </a>
-    <span>Ingeniería digital para marcas que necesitan presencia seria, rápida y mantenible.</span>
+    <span data-i18n="footer.credit-note">
+      Ingeniería digital para marcas que necesitan presencia seria, rápida y mantenible.
+    </span>
   </p>
 </footer>

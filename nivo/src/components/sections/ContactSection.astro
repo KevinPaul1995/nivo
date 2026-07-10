@@ -6,9 +6,9 @@ import { site } from "../../data/siteContent";
   <div class="parallax-layer parallax-layer--panel">
     <div class="contact-card">
       <div>
-        <span class="section-eyebrow">Contacto</span>
-        <h2 id="contact-title">Cotiza tu limpieza en minutos.</h2>
-        <p>
+        <span class="section-eyebrow" data-i18n="contact.eyebrow">Contacto</span>
+        <h2 id="contact-title" data-i18n="contact.title">Cotiza tu limpieza en minutos.</h2>
+        <p data-i18n="contact.text">
           Usa la cotización guiada para obtener un valor inicial y luego confirma
           los detalles por WhatsApp.
         </p>
@@ -16,9 +16,9 @@ import { site } from "../../data/siteContent";
 
       <div class="contact-actions">
         <a class="button quote-cta" href="/cotizar/">
-          Cotiza con nosotros
+          <span data-i18n="contact.cta">Cotiza con nosotros</span>
         </a>
-        <a class="button button--light" href={site.contact.whatsappHref} target="_blank" rel="noreferrer">
+        <a class="button button--light" href={site.contact.whatsappHref} target="_blank" rel="noreferrer" data-i18n="contact.whatsapp">
           {site.contact.whatsappLabel}
         </a>
         <a class="button button--ghost contact-actions__email" href={`mailto:${site.contact.email}`}>

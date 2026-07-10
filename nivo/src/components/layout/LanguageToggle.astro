@@ -1,0 +1,155 @@
+<div class="language-toggle" aria-label="Language selector">
+  <button type="button" data-lang-switch="es" aria-pressed="true">ES</button>
+  <button type="button" data-lang-switch="en" aria-pressed="false">EN</button>
+</div>
+
+<script is:inline>
+  const nivoTranslations = {
+    en: {
+      "hero.descriptor": "Professional cleaning",
+      "hero.cta": "Get a quote",
+      "hero.about": "Visible quality. Simple coordination.",
+      "hero.services-eyebrow": "Visible precision",
+      "hero.services-title": "Cleanliness you notice from the door.",
+      "hero.services-text": "Bathrooms, kitchens and high-contact surfaces with a final check before finishing.",
+      "coverage.eyebrow": "Local coverage",
+      "coverage.title": "Professional cleaning in Imbabura.",
+      "services.eyebrow": "Homes · offices · businesses",
+      "services.title": "Cleaning for your space.",
+      "services.card.Casas.title": "Homes",
+      "services.card.Oficinas.title": "Offices",
+      "services.card.Empresas.title": "Businesses",
+      "services.item.Cocinas y baños": "Kitchens and bathrooms",
+      "services.item.Dormitorios": "Bedrooms",
+      "services.item.Áreas sociales": "Living areas",
+      "services.item.Puestos de trabajo": "Workstations",
+      "services.item.Salas de reunión": "Meeting rooms",
+      "services.item.Zonas comunes": "Common areas",
+      "services.item.Áreas de atención": "Customer areas",
+      "services.item.Superficies de contacto": "High-touch surfaces",
+      "services.item.Mantenimiento": "Maintenance cleaning",
+      "service-note.Con o sin materiales incluidos": "With or without included materials",
+      "service-note.Cotización por WhatsApp": "WhatsApp quote confirmation",
+      "service-note.Revisión final del espacio": "Final space review",
+      "quote.eyebrow": "Guided quote",
+      "quote.title": "Get your cleaning quote without confusion.",
+      "quote.cta": "Start quote",
+      "quote.card-label": "NIVO process",
+      "quote.card-value": "7 steps",
+      "faq.eyebrow": "Frequently asked questions",
+      "faq.title": "The basics to coordinate your cleaning.",
+      "faq.question.¿En qué ciudades trabaja NIVO?": "Which cities does NIVO serve?",
+      "faq.answer.¿En qué ciudades trabaja NIVO?": "We serve Ibarra, Atuntaqui, Cotacachi and Otavalo. If your area is nearby, we can check availability through WhatsApp.",
+      "faq.question.¿Puedo contratar con o sin materiales?": "Can I book with or without materials?",
+      "faq.answer.¿Puedo contratar con o sin materiales?": "Yes. You can use your own products or ask NIVO to bring basic or complete materials. You choose this in the quote flow before confirming.",
+      "faq.question.¿Qué espacios limpian?": "What spaces do you clean?",
+      "faq.answer.¿Qué espacios limpian?": "We clean houses, apartments, offices, commercial spaces, move-in or move-out spaces and light post-construction spaces. The quote adapts its questions to the space type.",
+      "faq.question.¿El valor del cotizador es el valor final?": "Is the quoted value final?",
+      "faq.answer.¿El valor del cotizador es el valor final?": "Yes, as long as the information entered is accurate. On arrival we verify rooms, condition, access and selected extras.",
+      "contact.eyebrow": "Contact",
+      "contact.title": "Get your cleaning quote in minutes.",
+      "contact.text": "Use the guided quote to get an initial value and confirm details by WhatsApp.",
+      "contact.cta": "Get a quote",
+      "contact.whatsapp": "Quote by WhatsApp",
+      "footer.description": "Professional cleaning for homes, apartments, offices and commercial spaces in Ibarra, Atuntaqui, Cotacachi and Otavalo. Service with or without included materials.",
+      "footer.contact": "Contact",
+      "footer.coverage": "Coverage",
+      "footer.credit-prefix": "Web design and development by",
+      "footer.credit-note": "Digital engineering for brands that need a serious, fast and maintainable presence.",
+      "quote-page.back": "Back home",
+      "quote-page.eyebrow": "NIVO quote",
+      "quote-page.title": "Calculate your cleaning value step by step."
+    },
+    es: {}
+  };
+
+  function updateDocumentLanguage(lang) {
+    document.documentElement.lang = lang === "en" ? "en" : "es-EC";
+  }
+
+  function updateCurrentUrl(lang) {
+    const url = new URL(window.location.href);
+
+    if (lang === "en") {
+      url.searchParams.set("lang", "en");
+    } else {
+      url.searchParams.delete("lang");
+    }
+
+    window.history.replaceState({}, "", url.toString());
+  }
+
+  function updateInternalLinks(lang) {
+    document.querySelectorAll("a[href]").forEach((anchor) => {
+      const rawHref = anchor.getAttribute("href");
+
+      if (!rawHref || rawHref.startsWith("#") || rawHref.startsWith("mailto:") || rawHref.startsWith("tel:")) {
+        return;
+      }
+
+      let url;
+
+      try {
+        url = new URL(rawHref, window.location.origin);
+      } catch {
+        return;
+      }
+
+      if (url.origin !== window.location.origin) {
+        return;
+      }
+
+      if (lang === "en") {
+        url.searchParams.set("lang", "en");
+      } else {
+        url.searchParams.delete("lang");
+      }
+
+      const normalizedHref = `${url.pathname}${url.search}${url.hash}`;
+      anchor.setAttribute("href", normalizedHref);
+    });
+  }
+
+  function applyTranslations(lang) {
+    const dictionary = nivoTranslations[lang] || {};
+
+    document.querySelectorAll("[data-i18n]").forEach((element) => {
+      const key = element.getAttribute("data-i18n");
+      const original = element.getAttribute("data-i18n-original") || element.textContent.trim();
+
+      if (!element.hasAttribute("data-i18n-original")) {
+        element.setAttribute("data-i18n-original", original);
+      }
+
+      element.textContent = dictionary[key] || element.getAttribute("data-i18n-original");
+    });
+  }
+
+  function updateToggleState(lang) {
+    document.querySelectorAll("[data-lang-switch]").forEach((button) => {
+      const active = button.getAttribute("data-lang-switch") === lang;
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  function applyNivoLanguage(requestedLang) {
+    const normalizedLang = requestedLang === "en" ? "en" : "es";
+
+    updateDocumentLanguage(normalizedLang);
+    applyTranslations(normalizedLang);
+    updateToggleState(normalizedLang);
+    updateCurrentUrl(normalizedLang);
+    updateInternalLinks(normalizedLang);
+
+    window.localStorage.setItem("nivo-language", normalizedLang);
+    window.dispatchEvent(new CustomEvent("nivo:language", { detail: { lang: normalizedLang } }));
+  }
+
+  const savedLanguage = window.localStorage.getItem("nivo-language");
+  const urlLanguage = new URLSearchParams(window.location.search).get("lang");
+  applyNivoLanguage(urlLanguage || savedLanguage || "es");
+
+  document.querySelectorAll("[data-lang-switch]").forEach((button) => {
+    button.addEventListener("click", () => applyNivoLanguage(button.getAttribute("data-lang-switch")));
+  });
+</script>

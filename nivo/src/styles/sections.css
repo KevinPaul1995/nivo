@@ -22,9 +22,11 @@
   bottom: clamp(22px, 4vw, 46px);
   z-index: 2;
   display: grid;
+  align-content: center;
   width: 60px;
   height: 78px;
-  place-items: center;
+  justify-items: center;
+  gap: 2px;
   border: 1px solid rgba(7, 18, 15, 0.08);
   border-radius: 24px;
   background:
@@ -40,17 +42,27 @@
 }
 
 .section-scroll-cue span {
+  position: relative;
   display: block;
-  width: 44px;
-  height: 60px;
-  border-radius: 18px;
-  background-image: url("/images/cevrons.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  filter: contrast(1.04) saturate(0.25);
-  opacity: 0.84;
-  animation: section-chevron-wave 4.2s cubic-bezier(0.22, 0.72, 0.24, 1) infinite;
+  width: 2px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(7, 18, 15, 0.68);
+  opacity: 0.82;
+  transform-origin: center;
+  animation: section-arrow-drift 3s ease-in-out infinite alternate;
+}
+
+.section-scroll-cue span::after {
+  position: absolute;
+  right: -6px;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  border-right: 2px solid rgba(7, 18, 15, 0.68);
+  border-bottom: 2px solid rgba(7, 18, 15, 0.68);
+  content: "";
+  transform: rotate(45deg);
 }
 
 .quote-section {
@@ -107,25 +119,15 @@
   }
 }
 
-@keyframes section-chevron-wave {
-  0% {
-    opacity: 0.6;
-    transform: translateY(-5px) scale(0.97);
+@keyframes section-arrow-drift {
+  from {
+    opacity: 0.66;
+    transform: translateY(-4px) scaleY(0.96);
   }
 
-  35% {
+  to {
     opacity: 0.94;
-    transform: translateY(0) scale(1.012);
-  }
-
-  68% {
-    opacity: 0.94;
-    transform: translateY(4px) scale(0.998);
-  }
-
-  100% {
-    opacity: 0.6;
-    transform: translateY(8px) scale(0.975);
+    transform: translateY(6px) scaleY(1);
   }
 }
 
@@ -610,9 +612,14 @@
   }
 
   .section-scroll-cue span {
-    width: 38px;
-    height: 52px;
-    border-radius: 16px;
+    width: 2px;
+    height: 30px;
+  }
+
+  .section-scroll-cue span::after {
+    right: -5px;
+    width: 10px;
+    height: 10px;
   }
 
   .quote-section {
@@ -641,8 +648,8 @@
   }
 
   .faq-section .section-scroll-cue span {
-    width: 34px;
-    height: 46px;
+    width: 2px;
+    height: 28px;
   }
 
   .section-copy h2,

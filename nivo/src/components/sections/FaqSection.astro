@@ -6,8 +6,8 @@ import { faqItems } from "../../data/siteContent";
   <div class="section-grid section-grid--split">
     <div class="parallax-layer parallax-layer--copy">
       <div class="section-copy">
-        <span class="section-eyebrow">Preguntas frecuentes</span>
-        <h2 id="faq-title">Lo básico para coordinar tu limpieza.</h2>
+        <span class="section-eyebrow" data-i18n="faq.eyebrow">Preguntas frecuentes</span>
+        <h2 id="faq-title" data-i18n="faq.title">Lo básico para coordinar tu limpieza.</h2>
       </div>
     </div>
 
@@ -16,8 +16,8 @@ import { faqItems } from "../../data/siteContent";
         {
           faqItems.map((item) => (
             <details>
-              <summary>{item.question}</summary>
-              <p>{item.answer}</p>
+              <summary data-i18n={`faq.question.${item.question}`}>{item.question}</summary>
+              <p data-i18n={`faq.answer.${item.question}`}>{item.answer}</p>
             </details>
           ))
         }
@@ -26,6 +26,6 @@ import { faqItems } from "../../data/siteContent";
   </div>
 
   <button class="section-scroll-cue" type="button" data-scroll-next aria-label="Ir a la siguiente sección">
-    <span></span>
+    <span aria-hidden="true"></span>
   </button>
 </section>

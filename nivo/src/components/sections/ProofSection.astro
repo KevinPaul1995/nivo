@@ -6,8 +6,8 @@ import { coverageItems, serviceNotes } from "../../data/siteContent";
   <div class="section-grid section-grid--split coverage-layout">
     <div class="parallax-layer parallax-layer--copy">
       <div class="section-copy">
-        <span class="section-eyebrow">Cobertura local</span>
-        <h2 id="coverage-title">Limpieza profesional en Imbabura.</h2>
+        <span class="section-eyebrow" data-i18n="coverage.eyebrow">Cobertura local</span>
+        <h2 id="coverage-title" data-i18n="coverage.title">Limpieza profesional en Imbabura.</h2>
       </div>
     </div>
 
@@ -27,12 +27,12 @@ import { coverageItems, serviceNotes } from "../../data/siteContent";
   <div class="standards-strip parallax-layer parallax-layer--quiet" aria-label="Diferenciales del servicio NIVO">
     {
       serviceNotes.map((item) => (
-        <span>{item}</span>
+        <span data-i18n={`service-note.${item}`}>{item}</span>
       ))
     }
   </div>
 
   <button class="section-scroll-cue" type="button" data-scroll-next aria-label="Ir a la siguiente sección">
-    <span></span>
+    <span aria-hidden="true"></span>
   </button>
 </section>

@@ -264,17 +264,27 @@
 }
 
 .hero__scroll-cue span {
+  position: relative;
   display: block;
-  width: 52px;
-  height: 72px;
-  border-radius: 20px;
-  background-image: url("/images/cevrons.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  filter: contrast(1.04) saturate(0.35);
-  opacity: 0.92;
-  animation: scroll-image-wave 4.2s cubic-bezier(0.22, 0.72, 0.24, 1) infinite;
+  width: 2px;
+  height: 42px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.86;
+  transform-origin: center;
+  animation: scroll-arrow-drift 2.8s ease-in-out infinite alternate;
+}
+
+.hero__scroll-cue span::after {
+  position: absolute;
+  right: -7px;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: "";
+  transform: rotate(45deg);
 }
 
 .hero__scroll-cue:hover {
@@ -314,25 +324,15 @@
   }
 }
 
-@keyframes scroll-image-wave {
-  0% {
-    opacity: 0.64;
-    transform: translateY(-5px) scale(0.97);
+@keyframes scroll-arrow-drift {
+  from {
+    opacity: 0.68;
+    transform: translateY(-4px) scaleY(0.96);
   }
 
-  35% {
+  to {
     opacity: 1;
-    transform: translateY(0) scale(1.012);
-  }
-
-  68% {
-    opacity: 1;
-    transform: translateY(4px) scale(0.998);
-  }
-
-  100% {
-    opacity: 0.64;
-    transform: translateY(8px) scale(0.975);
+    transform: translateY(7px) scaleY(1);
   }
 }
 
@@ -455,9 +455,14 @@
   }
 
   .hero__scroll-cue span {
-    width: 42px;
-    height: 58px;
-    border-radius: 17px;
+    width: 2px;
+    height: 34px;
+  }
+
+  .hero__scroll-cue span::after {
+    right: -6px;
+    width: 12px;
+    height: 12px;
   }
 }
 

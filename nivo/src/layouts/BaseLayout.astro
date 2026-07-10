@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import { site } from "../data/siteContent";
 import ScrollEffects from "../components/layout/ScrollEffects.astro";
+import LanguageToggle from "../components/layout/LanguageToggle.astro";
 
 const {
   title = "NIVO | Limpieza profesional en Ibarra, Atuntaqui, Cotacachi y Otavalo",
@@ -38,7 +39,7 @@ const structuredData = JSON.stringify({
 const logoUrl = new URL("/logo.png", canonical).toString();
 ---
 
-<html lang="es">
+<html lang="es-EC">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -57,12 +58,16 @@ const logoUrl = new URL("/logo.png", canonical).toString();
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={logoUrl} />
     <meta property="og:locale" content="es_EC" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={logoUrl} />
 
     <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="es-EC" href={canonical} />
+    <link rel="alternate" hreflang="en" href={`${canonical}${canonical.includes("?") ? "&" : "?"}lang=en`} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
     <link rel="icon" href="/logo.ico" sizes="any" type="image/x-icon" />
     <link rel="icon" href="/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="/logo.png" />
@@ -71,6 +76,7 @@ const logoUrl = new URL("/logo.png", canonical).toString();
   </head>
 
   <body>
+    <LanguageToggle />
     <slot />
     <ScrollEffects />
   </body>
