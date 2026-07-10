@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   businessCounters,
   businessServiceTypes,
@@ -389,15 +390,20 @@ const optionCopy = {
       detail: 'Sujeto a disponibilidad.',
       info: 'Para casos urgentes. La visita depende de agenda, distancia y hora de solicitud.',
     },
-    'Atuntaqui / Antonio Ante': {
-      label: 'Atuntaqui / Antonio Ante',
+    Atuntaqui: {
+      label: 'Atuntaqui',
       detail: 'Base operativa inicial de NIVO.',
-      info: 'Selecciona esta zona si estás en Atuntaqui, Andrade Marín, Natabuela o sectores cercanos.',
+      info: 'Selecciona esta opción si el servicio es dentro de Atuntaqui.',
     },
-    'Natabuela / Andrade Marín / San Roque': {
-      label: 'Natabuela / Andrade Marín / San Roque',
-      detail: 'Sectores cercanos a Atuntaqui.',
-      info: 'Usa esta opción para parroquias y barrios cercanos a la base operativa.',
+    Natabuela: {
+      label: 'Natabuela',
+      detail: 'Cobertura en Natabuela; indica el sector exacto.',
+      info: 'Selecciona esta opción si el servicio es en Natabuela.',
+    },
+    'Andrade Marín / San Roque': {
+      label: 'Andrade Marín / San Roque',
+      detail: 'Sectores de Antonio Ante cercanos a Atuntaqui.',
+      info: 'Usa esta opción si el servicio es en Andrade Marín o San Roque.',
     },
     Ibarra: {
       label: 'Ibarra',
@@ -496,8 +502,9 @@ const optionCopy = {
     normal: { label: 'Flexible', detail: 'Can be coordinated according to schedule.', info: 'No immediate priority required.' },
     pronto: { label: 'Next 48 hours', detail: 'Needs schedule priority.', info: 'Use this if you need the service soon and have some schedule flexibility.' },
     hoy: { label: 'Today / urgent', detail: 'Subject to availability.', info: 'For urgent cases, depending on schedule, distance and request time.' },
-    'Atuntaqui / Antonio Ante': { label: 'Atuntaqui / Antonio Ante', detail: 'NIVO initial operating base.', info: 'Choose this area if you are in Atuntaqui, Andrade Marín, Natabuela or nearby sectors.' },
-    'Natabuela / Andrade Marín / San Roque': { label: 'Natabuela / Andrade Marín / San Roque', detail: 'Areas close to Atuntaqui.', info: 'Use this option for parishes and neighborhoods close to the operating base.' },
+    Atuntaqui: { label: 'Atuntaqui', detail: 'NIVO initial operating base.', info: 'Choose this option if the service is within Atuntaqui.' },
+    Natabuela: { label: 'Natabuela', detail: 'Coverage in Natabuela; add the exact sector.', info: 'Choose this option if the service is in Natabuela.' },
+    'Andrade Marín / San Roque': { label: 'Andrade Marín / San Roque', detail: 'Antonio Ante areas close to Atuntaqui.', info: 'Choose this option if the service is in Andrade Marín or San Roque.' },
     Ibarra: { label: 'Ibarra', detail: 'Urban coverage and nearby areas.', info: 'Add the exact sector to coordinate arrival and schedule.' },
     Otavalo: { label: 'Otavalo', detail: 'Coverage toward southern Imbabura.', info: 'Add neighborhood, reference and access availability.' },
     Cotacachi: { label: 'Cotacachi', detail: 'Coverage toward Cotacachi and nearby areas.', info: 'Add the exact sector to confirm travel and schedule.' },
@@ -1066,14 +1073,73 @@ function getOptionHelp(option, suffix) {
 }
 
 function InfoButton({ label, text }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const infoId = useId();
+  const descriptionId = useId();
+  const closeButtonRef = useRef(null);
+  const closeLabel = label.startsWith('More information') ? 'Close help' : 'Cerrar ayuda';
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', closeOnEscape);
+    closeButtonRef.current?.focus();
+
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [isOpen]);
+
   if (!text) {
     return null;
   }
 
   return (
-    <button className="quote-info-button" type="button" aria-label={label} data-info={text}>
-      i
-    </button>
+    <div className="quote-info">
+      <button
+        aria-label={label}
+        className="quote-info-button"
+        onClick={() => setIsOpen(true)}
+        type="button"
+      >
+        i
+      </button>
+      {isOpen
+        ? createPortal(
+            <div className="quote-info-dialog-backdrop" onMouseDown={() => setIsOpen(false)}>
+              <section
+                aria-describedby={descriptionId}
+                aria-labelledby={infoId}
+                aria-modal="true"
+                className="quote-info-dialog"
+                onMouseDown={(event) => event.stopPropagation()}
+                role="dialog"
+              >
+                <div className="quote-info-dialog__header">
+                  <span id={infoId}>{label}</span>
+                  <button
+                    aria-label={closeLabel}
+                    className="quote-info-close"
+                    onClick={() => setIsOpen(false)}
+                    ref={closeButtonRef}
+                    type="button"
+                  >
+                    ×
+                  </button>
+                </div>
+                <p id={descriptionId}>{text}</p>
+              </section>
+            </div>,
+            document.body,
+          )
+        : null}
+    </div>
   );
 }
 

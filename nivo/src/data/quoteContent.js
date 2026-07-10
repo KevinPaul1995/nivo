@@ -227,15 +227,21 @@ export const urgencyOptions = [
 
 export const cityOptions = [
   {
-    value: 'Atuntaqui / Antonio Ante',
-    label: 'Atuntaqui / Antonio Ante',
+    value: 'Atuntaqui',
+    label: 'Atuntaqui',
     detail: 'Base operativa inicial de NIVO.',
     travelFee: 0,
   },
   {
-    value: 'Natabuela / Andrade Marín / San Roque',
-    label: 'Natabuela / Andrade Marín / San Roque',
-    detail: 'Sectores cercanos a Atuntaqui.',
+    value: 'Natabuela',
+    label: 'Natabuela',
+    detail: 'Cobertura en Natabuela; indica el sector exacto.',
+    travelFee: 2,
+  },
+  {
+    value: 'Andrade Marín / San Roque',
+    label: 'Andrade Marín / San Roque',
+    detail: 'Sectores de Antonio Ante cercanos a Atuntaqui.',
     travelFee: 2,
   },
   {

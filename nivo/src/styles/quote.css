@@ -470,11 +470,14 @@
   gap: 12px;
 }
 
-.quote-info-button {
+.quote-info {
   position: relative;
-  z-index: 2;
-  display: inline-grid;
+  z-index: 3;
   flex: 0 0 auto;
+}
+
+.quote-info-button {
+  display: inline-grid;
   width: 30px;
   height: 30px;
   place-items: center;
@@ -497,36 +500,97 @@
   outline: none;
 }
 
-.quote-info-button::after {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
-  bottom: auto;
-  z-index: 8;
-  width: min(280px, 72vw);
-  padding: 12px 14px;
+.quote-info-close {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
   border: 1px solid rgba(7, 18, 15, 0.12);
-  border-radius: 16px;
-  content: attr(data-info);
-  color: rgba(7, 18, 15, 0.78);
-  background: #ffffff;
-  box-shadow: 0 18px 48px rgba(7, 18, 15, 0.14);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.45;
-  opacity: 0;
-  pointer-events: none;
-  text-align: left;
-  text-transform: none;
-  transform: translateY(-4px);
-  transition: opacity 160ms ease, transform 160ms ease;
+  border-radius: 50%;
+  color: rgba(7, 18, 15, 0.68);
+  background: #f8f7f1;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
-.quote-info-button:hover::after,
-.quote-info-button:focus-visible::after {
-  opacity: 1;
-  transform: translateY(0);
+.quote-info-close:hover,
+.quote-info-close:focus-visible {
+  color: var(--color-text);
+  background: var(--color-lime);
+  outline: none;
+}
+
+.quote-info-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 12, 9, 0.64);
+  backdrop-filter: blur(8px);
+  overscroll-behavior: contain;
+  touch-action: none;
+  animation: quote-dialog-backdrop-in 180ms ease both;
+}
+
+.quote-info-dialog {
+  width: min(460px, 100%);
+  padding: clamp(22px, 4vw, 30px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 26px;
+  color: var(--color-text);
+  background: #fbfaf5;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28);
+  animation: quote-dialog-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.quote-info-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(7, 18, 15, 0.1);
+}
+
+.quote-info-dialog__header span {
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.quote-info-dialog p {
+  margin: 18px 0 0;
+  font-size: clamp(0.96rem, 2.8vw, 1.04rem);
+  font-weight: 650;
+  line-height: 1.6;
+  color: rgba(7, 18, 15, 0.72);
+}
+
+@keyframes quote-dialog-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes quote-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .quote-counter__control {
@@ -721,16 +785,31 @@
 
 .quote-live-summary {
   position: sticky;
+  isolation: isolate;
+  overflow: hidden;
   top: 24px;
   display: grid;
   gap: 18px;
   padding: clamp(22px, 3vw, 34px);
+  border: 1px solid rgba(200, 255, 34, 0.42);
+  border-radius: 30px;
   color: #f8fbf3;
-  background: #07120f;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(200, 255, 34, 0.2), transparent 34%),
+    radial-gradient(circle at 4% 100%, rgba(78, 143, 57, 0.18), transparent 42%),
+    linear-gradient(145deg, #050706 0%, #0b1510 56%, #060907 100%);
+  box-shadow:
+    0 24px 68px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.quote-live-summary > * {
+  position: relative;
+  z-index: 1;
 }
 
 .quote-live-summary__label {
-  color: rgba(248, 251, 243, 0.68);
+  color: var(--color-lime);
 }
 
 .quote-live-summary > strong {
@@ -751,14 +830,14 @@
 
 .quote-live-summary__time {
   padding-top: 14px;
-  border-top: 1px solid rgba(248, 251, 243, 0.14);
+  border-top: 1px solid rgba(248, 251, 243, 0.16);
 }
 
 .quote-live-summary dl {
   display: grid;
   gap: 10px;
   padding-top: 16px;
-  border-top: 1px solid rgba(248, 251, 243, 0.14);
+  border-top: 1px solid rgba(248, 251, 243, 0.16);
   margin: 0;
 }
 
@@ -780,7 +859,7 @@
 }
 
 .quote-live-summary dd {
-  color: rgba(248, 251, 243, 0.9);
+  color: #f8fbf3;
   text-align: right;
 }
 
@@ -1121,6 +1200,20 @@
   .quote-result__button {
     width: 100%;
     min-width: 0;
+  }
+
+  .quote-info-dialog-backdrop {
+    padding: 18px;
+  }
+
+  .quote-info-dialog {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .quote-info-close {
+    width: 32px;
+    height: 32px;
   }
 }
 

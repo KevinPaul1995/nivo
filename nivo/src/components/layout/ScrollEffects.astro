@@ -1,8 +1,12 @@
 <script is:inline>
   (() => {
     const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const desktopCueQuery = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 560px)");
     const sections = Array.from(document.querySelectorAll("main > .content-section[data-parallax-section]"))
       .filter((section) => !section.closest(".hero"));
+    const cueSections = Array.from(document.querySelectorAll("main > section [data-scroll-next]"))
+      .map((cue) => cue.closest("section"))
+      .filter(Boolean);
 
     const scrollToNextSection = (section) => {
       const nextSection = section?.nextElementSibling;
@@ -47,7 +51,7 @@
       scrollToNextSection(section);
     });
 
-    if (!sections.length || reduceMotionQuery.matches) {
+    if (!sections.length && !cueSections.length) {
       return;
     }
 
@@ -55,10 +59,46 @@
 
     const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+    const updateActiveCue = (viewportHeight) => {
+      let activeSection = null;
+
+      if (desktopCueQuery.matches) {
+        const viewportCenter = viewportHeight * 0.5;
+        let bestScore = Number.POSITIVE_INFINITY;
+
+        cueSections.forEach((section) => {
+          const rect = section.getBoundingClientRect();
+
+          if (rect.bottom <= 0 || rect.top >= viewportHeight) {
+            return;
+          }
+
+          const distance = rect.top <= viewportCenter && rect.bottom >= viewportCenter
+            ? 0
+            : Math.min(Math.abs(rect.top - viewportCenter), Math.abs(rect.bottom - viewportCenter));
+
+          if (distance < bestScore) {
+            bestScore = distance;
+            activeSection = section;
+          }
+        });
+      }
+
+      cueSections.forEach((section) => {
+        section.classList.toggle("is-cue-active", section === activeSection);
+      });
+    };
+
     const update = () => {
       frame = 0;
 
       const viewportHeight = window.visualViewport?.height || window.innerHeight || 1;
+
+      updateActiveCue(viewportHeight);
+
+      if (reduceMotionQuery.matches) {
+        return;
+      }
 
       sections.forEach((section) => {
         const rect = section.getBoundingClientRect();
@@ -92,5 +132,6 @@
     window.addEventListener("scroll", requestUpdate, { passive: true });
     window.addEventListener("resize", requestUpdate);
     window.visualViewport?.addEventListener("resize", requestUpdate);
+    desktopCueQuery.addEventListener?.("change", requestUpdate);
   })();
 </script>
