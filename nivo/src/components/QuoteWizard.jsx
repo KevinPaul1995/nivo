@@ -88,6 +88,7 @@ const interfaceCopy = {
     frequency: 'Frecuencia',
     city: 'Ciudad',
     estimatedTime: 'Tiempo estimado',
+    suggestedPeople: 'Personal sugerido',
     clientSummary: 'Resumen de tu servicio',
     included: 'Alcance seleccionado',
     edit: 'Editar datos',
@@ -131,6 +132,7 @@ const interfaceCopy = {
     frequency: 'Frequency',
     city: 'City',
     estimatedTime: 'Estimated time',
+    suggestedPeople: 'Suggested staff',
     clientSummary: 'Service summary',
     included: 'Selected scope',
     edit: 'Edit details',
@@ -993,6 +995,14 @@ function getTimeSummary(quote, lang = 'es') {
     : `Primera visita aprox. ${quote.firstVisitHours} h; siguientes aprox. ${quote.followUpVisitHours} h`;
 }
 
+function getPeopleSummary(quote, lang = 'es') {
+  if (lang === 'en') {
+    return `${quote.suggestedPeople} ${quote.suggestedPeople === 1 ? 'person' : 'people'}`;
+  }
+
+  return `${quote.suggestedPeople} ${quote.suggestedPeople === 1 ? 'persona' : 'personas'}`;
+}
+
 function buildWhatsappHref(answers, quote, lang = 'es') {
   const areaSummary = quote.areaItems.length
     ? quote.areaItems.map((item) => `${translateLabel(item.label, lang)}: ${item.quantity}`).join('\n')
@@ -1028,6 +1038,7 @@ function buildWhatsappHref(answers, quote, lang = 'es') {
       `Sector / reference: ${answers.sector || 'To confirm'}`,
       `Calculated value: ${formatMoney(quote.estimated)}`,
       `Estimated time: ${getTimeSummary(quote, lang)}`,
+      `Suggested staff: ${getPeopleSummary(quote, lang)}`,
       '',
       answers.notes ? `Notes: ${answers.notes}` : 'Notes: To confirm with photos.',
       '',
@@ -1059,6 +1070,7 @@ function buildWhatsappHref(answers, quote, lang = 'es') {
     `Sector / referencia: ${answers.sector || 'Por confirmar'}`,
     `Valor calculado: ${formatMoney(quote.estimated)}`,
     `Tiempo estimado: ${getTimeSummary(quote, lang)}`,
+    `Personal sugerido: ${getPeopleSummary(quote, lang)}`,
     '',
     answers.notes ? `Observaciones: ${answers.notes}` : 'Observaciones: Por confirmar con fotos.',
     '',
@@ -1606,6 +1618,10 @@ export default function QuoteWizard() {
             <span>{copy.city}</span>
             <strong>{quote.city.label}</strong>
           </article>
+          <article>
+            <span>{copy.suggestedPeople}</span>
+            <strong>{getPeopleSummary(quote, lang)}</strong>
+          </article>
         </div>
 
         <div className="quote-breakdown">
@@ -1655,6 +1671,10 @@ export default function QuoteWizard() {
             <article>
               <span>{copy.estimatedTime}</span>
               <strong>{getTimeSummary(quote, lang)}</strong>
+            </article>
+            <article>
+              <span>{copy.suggestedPeople}</span>
+              <strong>{getPeopleSummary(quote, lang)}</strong>
             </article>
           </div>
 
@@ -1734,6 +1754,12 @@ export default function QuoteWizard() {
           <strong>{formatMoney(quote.estimated)}</strong>
           <p>{getFrequencySummaryText(quote, lang)}</p>
           <p className="quote-live-summary__time">{getTimeSummary(quote, lang)}</p>
+          <dl>
+            <div>
+              <dt>{copy.suggestedPeople}</dt>
+              <dd>{getPeopleSummary(quote, lang)}</dd>
+            </div>
+          </dl>
         </aside>
       </div>
     </div>
